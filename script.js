@@ -61,6 +61,12 @@ function switchView(viewId, btnElement) {
         btnElement.classList.add('active');
     }
 }
+function aplicarModoAdminVisual() {
+    const adminElements = document.querySelectorAll('.admin-only');
+    adminElements.forEach(el => {
+        el.style.setProperty('display', isAdmin ? 'inline-block' : 'none', 'important');
+    });
+}
 
 /* ==========================================================
    EDICIÓN EN LÍNEA
