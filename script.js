@@ -36,10 +36,18 @@ function verificarAdmin() {
 
 function aplicarModoAdminVisual() {
     const adminElements = document.querySelectorAll('.admin-only');
-    adminElements.forEach(el => el.style.setProperty('display', isAdmin ? 'block' : 'none', 'important'));
+    adminElements.forEach(el => {
+        if (isAdmin) {
+            el.style.setProperty('display', 'inline-block', 'important');
+        } else {
+            el.style.setProperty('display', 'none', 'important');
+        }
+    });
+
     const lockIcon = document.getElementById('admin-lock-icon');
     if (lockIcon) {
         lockIcon.className = isAdmin ? "fa-solid fa-unlock" : "fa-solid fa-lock";
+        lockIcon.style.color = isAdmin ? "var(--accent)" : "var(--text-muted)";
     }
 }
 
@@ -60,12 +68,6 @@ function switchView(viewId, btnElement) {
     if (btnElement) {
         btnElement.classList.add('active');
     }
-}
-function aplicarModoAdminVisual() {
-    const adminElements = document.querySelectorAll('.admin-only');
-    adminElements.forEach(el => {
-        el.style.setProperty('display', isAdmin ? 'inline-block' : 'none', 'important');
-    });
 }
 
 /* ==========================================================
@@ -259,22 +261,7 @@ async function eliminar(col, id) {
         }
     }
 }
-function aplicarModoAdminVisual() {
-    const adminElements = document.querySelectorAll('.admin-only');
-    adminElements.forEach(el => {
-        if (isAdmin) {
-            el.style.setProperty('display', 'inline-block', 'important');
-        } else {
-            el.style.setProperty('display', 'none', 'important');
-        }
-    });
 
-    const lockIcon = document.getElementById('admin-lock-icon');
-    if (lockIcon) {
-        lockIcon.className = isAdmin ? "fa-solid fa-unlock" : "fa-solid fa-lock";
-        lockIcon.style.color = isAdmin ? "var(--accent)" : "var(--text-muted)";
-    }
-}
 /* ==========================================================
    CARGA DE DATOS LOCALES Y PERSISTENCIA
    ========================================================== */
