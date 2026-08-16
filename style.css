@@ -5,6 +5,13 @@
     --text-muted: #94a3b8;
     --border: #334155;
 }
+body:not(.admin-mode) .edit-btn,
+body:not(.admin-mode) .inline-edit-box,
+body:not(.admin-mode) .avatar-overlay, /* Oculta el botón de modificar foto de perfil */
+body:not(.admin-mode) .card form,     /* Oculta formularios dentro de las tarjetas (Subir proyectos, hobbies, etc.) */
+body:not(.admin-mode) button[onclick*="delete"], /* Oculta botones de eliminación genéricos */
+body:not(.admin-mode) .delete-btn {
+    display: none !important;
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #020617; color: var(--text-main); line-height: 1.6; padding: 20px; overflow-x: hidden; position: relative; min-height: 100vh; }
 
