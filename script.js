@@ -16,8 +16,8 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// Configuración de Cloudinary para el navegador
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4nl5wxl/upload";
+// URL corregida de Cloudinary para el navegador
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4ni5wxl/upload";
 const CLOUDINARY_PRESET = "portafolio_preset";
 
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
@@ -98,14 +98,14 @@ async function subirACloudinary(file) {
 }
 
 /* ==========================================================
-   GESTIÓN DE AVATAR (Cloudinary + Firebase) - Mejorado
+   GESTIÓN DE AVATAR (Cloudinary + Firebase)
    ========================================================== */
 async function updateAvatar(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     if (!isAdmin) {
-        alert('Debes iniciar sesión como Administrador para cambiar el avatar.');
+        alert('Debes iniciar sesión como Administrador para cambiar el avatar (Haz clic en alguna sección para iniciar sesión).');
         verificarAdmin();
         return;
     }
@@ -120,15 +120,20 @@ async function updateAvatar(event) {
             alert('¡Avatar actualizado y guardado en Firebase con éxito!');
         } catch (err) {
             console.error("Error crítico al guardar avatar en Firestore:", err);
-            alert('Error al guardar la URL en Firebase. Revisa las reglas de seguridad de tu base de datos.');
+            alert('Error al guardar la URL en Firebase.');
         }
-    } else {
-        alert('No se pudo obtener la URL de Cloudinary. Revisa la consola (F12).');
+    }
+}
+
+function aplicarImagenAvatar(src) {
+    const wrapper = document.getElementById('avatar-display-wrapper');
+    if (wrapper) {
+        wrapper.innerHTML = `<img src="${src}" alt="Avatar" class="avatar-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
     }
 }
 
 /* ==========================================================
-   EDICIÓN RÁPIDA DE SECCIONES (Modo Admin) - Forzado visual
+   EDICIÓN RÁPIDA DE SECCIONES (Modo Admin)
    ========================================================== */
 function toggleEdit(sectionKey) {
     if (!isAdmin) {
@@ -137,23 +142,21 @@ function toggleEdit(sectionKey) {
     }
 
     const editBox = document.getElementById(`edit-box-${sectionKey}`);
-    const dispEl = document.getElementById(`disp-${sectionKey}`) || document.getElementById(`disp-${sectionKey}-intro`);
+    if (!editBox) return;
 
-    if (!editBox) {
-        alert(`No se encontró el contenedor de edición para: edit-box-${sectionKey}`);
-        return;
-    }
+    // Alternar clase .active que controla el CSS (.inline-edit-box.active { display: block; })
+    editBox.classList.toggle('active');
 
-    // Forzar apertura visual explícita
-    if (editBox.style.display === 'block' || window.getComputedStyle(editBox).display === 'block') {
-        editBox.style.display = 'none';
-    } else {
-        editBox.style.display = 'block';
-        
-        // Precargar texto actual si existe el input correspondiente
-        const inputEl = document.getElementById(`input-${sectionKey}`);
-        if (inputEl && dispEl) {
-            inputEl.value = dispEl.innerText.trim();
+    // Precargar datos actuales si se abre el cuadro
+    if (editBox.classList.contains('active')) {
+        if (sectionKey === 'profile') {
+            const disp = document.getElementById('disp-profile');
+            const input = document.getElementById('input-profile');
+            if (disp && input) input.value = disp.innerText.trim();
+        } else if (sectionKey === 'events') {
+            const disp = document.getElementById('disp-events-intro');
+            const input = document.getElementById('input-events');
+            if (disp && input) input.value = disp.innerText.trim();
         }
     }
 }
@@ -164,9 +167,14 @@ async function saveEdit(sectionKey) {
     try {
         let payload = {};
 
-        if (sectionKey === 'profile' || sectionKey === 'events' || sectionKey === 'skills' || sectionKey === 'certs') {
-            const val = document.getElementById(`input-${sectionKey}`).value;
-            payload[sectionKey] = val;
+        if (sectionKey === 'profile') {
+            payload.profile = document.getElementById('input-profile').value;
+        } else if (sectionKey === 'skills') {
+            payload.skills = document.getElementById('input-skills').value;
+        } else if (sectionKey === 'events') {
+            payload.events = document.getElementById('input-events').value;
+        } else if (sectionKey === 'certs') {
+            payload.certs = document.getElementById('input-certs').value;
         } else if (sectionKey === 'contact') {
             payload.srv1Title = document.getElementById('input-srv1-title').value;
             payload.srv1Desc = document.getElementById('input-srv1-desc').value;
@@ -306,12 +314,14 @@ function cargarProyectosFirestore() {
             const p = doc.data();
             const id = doc.id;
             container.innerHTML += `
-                <div class="project-card" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; padding: 1rem; margin-bottom: 1rem;">
-                    ${p.img ? `<img src="${p.img}" alt="${p.title}" style="width:100%; height:160px; object-fit:cover; border-radius:6px; margin-bottom: 0.75rem;">` : ''}
-                    <h3 style="color: #38bdf8; margin-bottom: 0.5rem;">${p.title}</h3>
-                    <p style="font-size: 0.9rem; margin-bottom: 0.75rem; color: #cbd5e1;">${p.desc}</p>
-                    ${p.link ? `<a href="${p.link}" target="_blank" style="color: #38bdf8; text-decoration: underline; font-size: 0.85rem; display:inline-block; margin-bottom:0.5rem;">Ver Enlace</a>` : ''}
-                    ${isAdmin ? `<button onclick="deleteProject('${id}')" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: block; margin-top: 5px;">Eliminar</button>` : ''}
+                <div class="project-card">
+                    ${p.img ? `<div class="project-img-container"><img src="${p.img}" alt="${p.title}" class="project-img"></div>` : ''}
+                    <div class="project-content">
+                        <h3>${p.title}</h3>
+                        <p>${p.desc}</p>
+                        ${p.link ? `<a href="${p.link}" target="_blank" style="color: var(--accent); text-decoration: underline; font-size: 0.85rem; display:inline-block; margin-bottom:10px;">Ver Enlace</a>` : ''}
+                        ${isAdmin ? `<button onclick="deleteProject('${id}')" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: block; width: 100%;">Eliminar</button>` : ''}
+                    </div>
                 </div>
             `;
         });
@@ -386,15 +396,15 @@ function cargarHobbiesFirestore() {
             const h = doc.data();
             const id = doc.id;
             container.innerHTML += `
-                <div class="carousel-item" style="min-width: 280px; background: rgba(30, 41, 59, 0.8); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05); position: relative; margin-bottom: 1rem;">
-                    <span style="font-size: 0.75rem; background: #38bdf8; color: #0f172a; padding: 2px 6px; border-radius: 4px; font-weight: bold; display:inline-block; margin-bottom:5px;">${h.category}</span>
-                    <h3 style="margin: 0.5rem 0; color: #fff;">${h.title}</h3>
+                <div class="carousel-item">
+                    <span style="font-size: 0.75rem; background: var(--accent); color: #0f172a; padding: 2px 6px; border-radius: 4px; font-weight: bold; display:inline-block; margin-bottom:5px;">${h.category}</span>
+                    <h3 style="margin: 0.5rem 0; color: #fff; font-size: 1rem;">${h.title}</h3>
                     ${h.media ? (h.type === 'video' ? 
-                        `<video src="${h.media}" controls style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px;"></video>` : 
-                        `<img src="${h.media}" alt="${h.title}" style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px;">`
+                        `<video src="${h.media}" controls style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:8px;"></video>` : 
+                        `<img src="${h.media}" alt="${h.title}" style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:8px;">`
                     ) : ''}
-                    <p style="font-size: 0.85rem; margin-top: 0.5rem; color: #cbd5e1;">${h.desc}</p>
-                    ${isAdmin ? `<button onclick="deleteHobby('${id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 0.8rem;">Eliminar</button>` : ''}
+                    <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">${h.desc}</p>
+                    ${isAdmin ? `<button onclick="deleteHobby('${id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 0.8rem; width:100%;">Eliminar</button>` : ''}
                 </div>
             `;
         });
