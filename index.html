@@ -35,10 +35,12 @@
             <button class="nav-btn" onclick="switchView('contact-view', this)"><i class="fa-solid fa-phone"></i> Servicios - Contacto</button>
         </div>
 
-        <div class="contact-info">
+        <div class="contact-info" style="position: relative;">
             <div><strong>Especialidad:</strong> IT, Redes & Automatización</div>
             <div><strong>Enfoque:</strong> Debugging & Arquitectura de Software</div>
             <div><strong>Torneos:</strong> PIU MOD PERÚ / MOD International</div>
+            <!-- Candado secreto para activar admin haciendo clic -->
+            <i id="admin-lock-icon" class="fa-solid fa-lock" onclick="verificarAdmin()" style="position: absolute; bottom: 0; right: 0; cursor: pointer; color: var(--text-muted); font-size: 0.8rem;" title="Acceso Administrador"></i>
         </div>
     </aside>
 
@@ -47,7 +49,7 @@
         <!-- VISTA 1: PORTAFOLIO PRINCIPAL -->
         <div id="portfolio-view" class="view-section active">
             <section class="card" id="section-profile">
-                <h2>Perfil Profesional <button class="edit-btn" onclick="toggleEdit('profile')">✏️ Modificar</button></h2>
+                <h2>Perfil Profesional <button class="edit-btn admin-only" onclick="toggleEdit('profile')">✏️ Modificar</button></h2>
                 <p id="disp-profile" class="p-text">
                     Profesional especializado en tecnologías de la información, infraestructura de redes y desarrollo de software. Con una sólida trayectoria en gestión de servicios estudiantiles, enfoco mi carrera actual en la resolución avanzada de problemas técnicos, scripts de depuración de conexiones cliente-servidor y la optimización de plataformas tecnológicas.
                 </p>
@@ -59,7 +61,7 @@
             </section>
 
             <section class="card" id="section-skills">
-                <h2>Competencias Técnicas <button class="edit-btn" onclick="toggleEdit('skills')">✏️ Modificar</button></h2>
+                <h2>Competencias Técnicas <button class="edit-btn admin-only" onclick="toggleEdit('skills')">✏️ Modificar</button></h2>
                 <div class="skills-grid" id="disp-skills-container">
                     <div class="skill-box">
                         <h3>Desarrollo y Debugging</h3>
@@ -82,7 +84,7 @@
             </section>
 
             <section class="card" id="section-events">
-                <h2>Gestión de Proyectos & E-sports Tech <button class="edit-btn" onclick="toggleEdit('events')">✏️ Modificar</button></h2>
+                <h2>Gestión de Proyectos & E-sports Tech <button class="edit-btn admin-only" onclick="toggleEdit('events')">✏️ Modificar</button></h2>
                 <p id="disp-events-intro" class="p-text">Orquestación técnica, soporte y administración de plataformas para torneos regionales de gran escala bajo las marcas <strong>PIU MOD PERÚ</strong> y <strong>MOD International FEST</strong>.</p>
                 <div id="edit-box-events" class="inline-edit-box">
                     <div class="form-group"><textarea id="input-events" style="height: 100px;"></textarea></div>
@@ -92,7 +94,7 @@
             </section>
 
             <section class="card" id="section-certs">
-                <h2>Credenciales Académicas & Certificaciones <button class="edit-btn" onclick="toggleEdit('certs')">✏️ Modificar</button></h2>
+                <h2>Credenciales Académicas & Certificaciones <button class="edit-btn admin-only" onclick="toggleEdit('certs')">✏️ Modificar</button></h2>
                 <table>
                     <thead><tr><th>Certificación / Curso</th><th>Institución / Enfoque</th><th>Fecha</th></tr></thead>
                     <tbody id="disp-certs">
@@ -150,7 +152,7 @@
         <!-- VISTA 4: CONTACTO -->
         <div id="contact-view" class="view-section">
             <section class="card">
-                <h2>Servicios Profesionales & Contacto <button class="edit-btn" onclick="toggleEdit('contact')">✏️ Modificar</button></h2>
+                <h2>Servicios Profesionales & Contacto <button class="edit-btn admin-only" onclick="toggleEdit('contact')">✏️ Modificar</button></h2>
                 
                 <div id="disp-contact-content">
                     <div class="services-list">
