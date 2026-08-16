@@ -107,33 +107,41 @@ function saveEdit(sectionKey) {
     if (!isAdmin) { alert('Acción no permitida'); return; }
     let savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
 
+    // Buscamos el cuadro de edición por su ID
+    const editBox = document.getElementById(`edit-box-${sectionKey}`);
+    
+    // Buscamos el textarea DENTRO de ese editBox específico (más seguro)
+    const inputElement = editBox ? editBox.querySelector('textarea') : null;
+
+    if (!inputElement) {
+        console.error("No se encontró el textarea en la sección: " + sectionKey);
+        alert("Error técnico: No se encontró el campo de edición.");
+        return;
+    }
+
+    const val = inputElement.value;
+
     if (sectionKey === 'profile') {
-        const val = document.getElementById('input-profile').value;
         const disp = document.getElementById('disp-profile');
         if (disp) disp.innerText = val;
         savedData['profile'] = val;
     } else if (sectionKey === 'skills') {
-        const val = document.getElementById('input-skills').value;
-        const disp = document.getElementById('disp-skills');
+        const disp = document.getElementById('disp-skills-container');
         if (disp) disp.innerHTML = val;
         savedData['skills'] = val;
     } else if (sectionKey === 'events') {
-        const val = document.getElementById('input-events').value;
         const disp = document.getElementById('disp-events-intro');
         if (disp) disp.innerText = val;
         savedData['events'] = val;
     } else if (sectionKey === 'certs') {
-        const val = document.getElementById('input-certs').value;
         const disp = document.getElementById('disp-certs');
-        if (disp) disp.innerText = val;
+        if (disp) disp.innerHTML = val;
         savedData['certs'] = val;
     }
 
     localStorage.setItem('portfolio_edits', JSON.stringify(savedData));
     toggleEdit(sectionKey);
-    alert('¡Cambios guardados con éxito!');
 }
-
 /* ==========================================================
    SUBIDA DE IMÁGENES Y AVATAR
    ========================================================== */
