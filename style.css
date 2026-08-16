@@ -148,6 +148,7 @@ aside {
     position: relative; 
     width: 100px; 
     height: 100px; 
+    margintop: 20px
     margin: 0 auto 20px; 
     cursor: pointer; /* Por defecto pointer, pero el modo no-admin lo anula arriba */
 }
