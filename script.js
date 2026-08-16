@@ -558,10 +558,15 @@ function cargarProyectosFirestore() {
             const p = doc.data();
             const id = doc.id;
 
-            // Formatear la descripción si contiene asteriscos o si es ese proyecto en específico
+            // Transforma cada asterisco '*' en un salto de línea con viñeta '<br>• '
             let formattedDesc = p.desc || '';
-            if (p.title && p.title.includes("Gestión de Proyectos & E-sports Tech")) {
-                formattedDesc = formattedDesc.replaceAll('*', '<br>•');
+            if (formattedDesc.includes('*')) {
+                formattedDesc = formattedDesc
+                    .split('*')
+                    .map(item => item.trim())
+                    .filter(item => item.length > 0)
+                    .join('<br>• ');
+                formattedDesc = '• ' + formattedDesc;
             }
 
             container.innerHTML += `
