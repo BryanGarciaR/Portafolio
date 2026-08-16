@@ -16,7 +16,7 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// URL corregida de Cloudinary para el navegador
+// URL de Cloudinary
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4ni5wxl/upload";
 const CLOUDINARY_PRESET = "portafolio_preset";
 
@@ -98,14 +98,14 @@ async function subirACloudinary(file) {
 }
 
 /* ==========================================================
-   GESTIÓN DE AVATAR (Cloudinary + Firebase)
+   GESTIÓN DE AVATAR
    ========================================================== */
 async function updateAvatar(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     if (!isAdmin) {
-        alert('Debes iniciar sesión como Administrador para cambiar el avatar (Haz clic en alguna sección para iniciar sesión).');
+        alert('Debes iniciar sesión como Administrador para cambiar el avatar.');
         verificarAdmin();
         return;
     }
@@ -119,7 +119,7 @@ async function updateAvatar(event) {
             await db.collection('portfolio').doc('config').set({ avatar: url }, { merge: true });
             alert('¡Avatar actualizado y guardado en Firebase con éxito!');
         } catch (err) {
-            console.error("Error crítico al guardar avatar en Firestore:", err);
+            console.error("Error al guardar avatar en Firestore:", err);
             alert('Error al guardar la URL en Firebase.');
         }
     }
@@ -135,9 +135,6 @@ function aplicarImagenAvatar(src) {
 /* ==========================================================
    EDICIÓN RÁPIDA DE SECCIONES (Modo Admin)
    ========================================================== */
-// ==========================================
-// EDICIÓN RÁPIDA DE SECCIONES (Modo Admin)
-// ==========================================
 function toggleEdit(sectionKey) {
     if (!isAdmin) {
         verificarAdmin();
@@ -149,7 +146,6 @@ function toggleEdit(sectionKey) {
 
     editBox.classList.toggle('active');
 
-    // Precargar datos actuales si se abre el cuadro
     if (editBox.classList.contains('active')) {
         if (sectionKey === 'profile') {
             const disp = document.getElementById('disp-profile');
@@ -160,187 +156,9 @@ function toggleEdit(sectionKey) {
             const input = document.getElementById('input-events');
             if (disp && input) input.value = disp.innerText.trim();
         }
-        // Nota: 'skills' y 'certs' se cargan automáticamente desde cargarDatosRemotos()
     }
 }
 
-async function saveEdit(sectionKey) {
-    if (!isAdmin) return;
-
-    try {
-        let payload = {};
-
-        if (sectionKey === 'profile') {
-            payload.profile = document.getElementById('input-profile').value;
-        } else if (sectionKey === 'skills') {
-            payload.skills = document.getElementById('input-skills').value;
-        } else if (sectionKey === 'events') {
-            payload.events = document.getElementById('input-events').value;
-        } else if (sectionKey === 'certs') {
-            // Convierte las líneas del textarea en un arreglo estructurado para la tabla
-            const rawText = document.getElementById('input-certs').value;
-            const lines = rawText.split('\n');
-            const certsArray = lines.map(line => {
-                const parts = line.split('|').map(p => p.trim());
-                return {
-                    curso: parts[0] || "",
-                    institucion: parts[1] || "",
-                    fecha: parts[2] || ""
-                };
-            }).filter(c => c.curso !== "");
-            
-            payload.certs = certsArray;
-        } else if (sectionKey === 'contact') {
-            payload.contact = {
-                srv1: {
-                    title: document.getElementById('input-srv1-title').value,
-                    desc: document.getElementById('input-srv1-desc').value
-                },
-                srv2: {
-                    title: document.getElementById('input-srv2-title').value,
-                    desc: document.getElementById('input-srv2-desc').value
-                },
-                phone: document.getElementById('input-phone').value,
-                wsp: document.getElementById('input-wsp').value,
-                fb: document.getElementById('input-fb').value,
-                tk: document.getElementById('input-tk').value
-            };
-        }
-
-        await db.collection('portfolio').doc('config').set(payload, { merge: true });
-        alert('¡Cambios guardados con éxito en Firebase!');
-        toggleEdit(sectionKey);
-        cargarDatosRemotos();
-    } catch (error) {
-        console.error("Error al guardar cambios:", error);
-        alert('Hubo un error al guardar los cambios.');
-    }
-}
-
-// ==========================================
-// 1. CARGAR DATOS REMOTOS DESDE FIRESTORE
-// ==========================================
-function cargarDatosRemotos() {
-    db.collection('portfolio').doc('config').get().then((doc) => {
-        if (doc.exists) {
-            const data = doc.data();
-
-            // Avatar y Perfil
-            if (data.avatar && typeof aplicarImagenAvatar === 'function') aplicarImagenAvatar(data.avatar);
-            if (data.profile) {
-                const el = document.getElementById('disp-profile');
-                if (el) el.innerText = data.profile;
-                const inputProfile = document.getElementById('input-profile');
-                if (inputProfile) inputProfile.value = data.profile;
-            }
-
-            // Competencias Técnicas (Skills)
-            if (data.skills) {
-                if (typeof data.skills === 'object') {
-                    // Cargar en los textareas del formulario de edición
-                    if (document.getElementById('input-skills-dev')) {
-                        document.getElementById('input-skills-dev').value = data.skills.dev || '';
-                    }
-                    if (document.getElementById('input-skills-infra')) {
-                        document.getElementById('input-skills-infra').value = data.skills.infra || '';
-                    }
-                    if (document.getElementById('input-skills-mgmt')) {
-                        document.getElementById('input-skills-mgmt').value = data.skills.mgmt || '';
-                    }
-
-                    // Actualizar las tarjetas visuales si el contenedor existe
-                    const container = document.getElementById('disp-skills-container');
-                    if (container) {
-                        container.innerHTML = `
-                            <div class="skill-box">
-                                <h3>Desarrollo y Debugging</h3>
-                                <ul>${data.skills.dev || ''}</ul>
-                            </div>
-                            <div class="skill-box">
-                                <h3>Infraestructura & Redes</h3>
-                                <ul>${data.skills.infra || ''}</ul>
-                            </div>
-                            <div class="skill-box">
-                                <h3>Gestión y E-sports Tech</h3>
-                                <ul>${data.skills.mgmt || ''}</ul>
-                            </div>
-                        `;
-                    }
-                } 
-                else if (typeof data.skills === 'string') {
-                    const inputSkills = document.getElementById('input-skills');
-                    if (inputSkills) inputSkills.value = data.skills;
-                }
-            }
-        }
-    }).catch((error) => {
-        console.error("Error al cargar los datos remotos: ", error);
-    });
-}
-
-            // Eventos / Intro
-            if (data.events) {
-                const el = document.getElementById('disp-events-intro');
-                if (el) el.innerHTML = data.events;
-                const inputEvents = document.getElementById('input-events');
-                if (inputEvents) inputEvents.value = data.events;
-            }
-
-            // Certificaciones (Renderizado dinámico de la tabla)
-            if (data.certs && Array.isArray(data.certs)) {
-                const tbody = document.getElementById('disp-certs');
-                if (tbody) {
-                    tbody.innerHTML = "";
-                    data.certs.forEach(cert => {
-                        tbody.innerHTML += `<tr><td><strong>${cert.curso}</strong></td><td>${cert.institucion}</td><td>${cert.fecha}</td></tr>`;
-                    });
-                }
-                const inputCerts = document.getElementById('input-certs');
-                if (inputCerts) {
-                    inputCerts.value = data.certs.map(c => `${c.curso} | ${c.institucion} | ${c.fecha}`).join('\n');
-                }
-            }
-
-            // Contacto y Redes Sociales
-            if (data.contact) {
-                if (data.contact.srv1) {
-                    document.getElementById('disp-srv1-title').innerHTML = `<i class="fa-solid fa-screwdriver-wrench"></i> ${data.contact.srv1.title}`;
-                    document.getElementById('disp-srv1-desc').innerText = data.contact.srv1.desc;
-                    document.getElementById('input-srv1-title').value = data.contact.srv1.title;
-                    document.getElementById('input-srv1-desc').value = data.contact.srv1.desc;
-                }
-                if (data.contact.srv2) {
-                    document.getElementById('disp-srv2-title').innerHTML = `<i class="fa-solid fa-microchip"></i> ${data.contact.srv2.title}`;
-                    document.getElementById('disp-srv2-desc').innerText = data.contact.srv2.desc;
-                    document.getElementById('input-srv2-title').value = data.contact.srv2.title;
-                    document.getElementById('input-srv2-desc').value = data.contact.srv2.desc;
-                }
-                if (data.contact.phone) {
-                    document.getElementById('disp-phone').innerText = data.contact.phone;
-                    document.getElementById('input-phone').value = data.contact.phone;
-                }
-                if (data.contact.wsp) {
-                    document.getElementById('disp-wsp-link').href = data.contact.wsp;
-                    document.getElementById('input-wsp').value = data.contact.wsp;
-                }
-                if (data.contact.fb) {
-                    document.getElementById('disp-fb-link').href = data.contact.fb;
-                    document.getElementById('input-fb').value = data.contact.fb;
-                }
-                if (data.contact.tk) {
-                    document.getElementById('disp-tk-link').href = data.contact.tk;
-                    document.getElementById('input-tk').value = data.contact.tk;
-                }
-            }
-        
-    }).catch((error) => {
-        console.warn("Aviso: No se pudo conectar a Firestore.", error);
-    });
-}
-
-// ==========================================
-// 2. GUARDAR CAMBIOS DE EDICIÓN (SAVE EDIT)
-// ==========================================
 function saveEdit(section) {
     if (!isAdmin) return;
 
@@ -412,20 +230,116 @@ function saveEdit(section) {
       });
 }
 
-    db.collection('portfolio').doc('config').set(payload, { merge: true })
-      .then(() => {
-          alert("¡Cambios guardados correctamente en la base de datos!");
-          toggleEdit(section);
-          cargarDatosRemotos();
-      })
-      .catch((error) => {
-          console.error("Error al guardar en Firestore: ", error);
-          alert("Hubo un error al guardar los cambios.");
-      });
+/* ==========================================================
+   CARGAR DATOS REMOTOS DESDE FIRESTORE
+   ========================================================== */
+function cargarDatosRemotos() {
+    db.collection('portfolio').doc('config').get().then((doc) => {
+        if (doc.exists) {
+            const data = doc.data();
+
+            // Avatar y Perfil
+            if (data.avatar && typeof aplicarImagenAvatar === 'function') aplicarImagenAvatar(data.avatar);
+            if (data.profile) {
+                const el = document.getElementById('disp-profile');
+                if (el) el.innerText = data.profile;
+                const inputProfile = document.getElementById('input-profile');
+                if (inputProfile) inputProfile.value = data.profile;
+            }
+
+            // Competencias Técnicas (Skills)
+            if (data.skills) {
+                if (typeof data.skills === 'object') {
+                    if (document.getElementById('input-skills-dev')) document.getElementById('input-skills-dev').value = data.skills.dev || '';
+                    if (document.getElementById('input-skills-infra')) document.getElementById('input-skills-infra').value = data.skills.infra || '';
+                    if (document.getElementById('input-skills-mgmt')) document.getElementById('input-skills-mgmt').value = data.skills.mgmt || '';
+
+                    const container = document.getElementById('disp-skills-container');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="skill-box">
+                                <h3>Desarrollo y Debugging</h3>
+                                <ul>${data.skills.dev || ''}</ul>
+                            </div>
+                            <div class="skill-box">
+                                <h3>Infraestructura & Redes</h3>
+                                <ul>${data.skills.infra || ''}</ul>
+                            </div>
+                            <div class="skill-box">
+                                <h3>Gestión y E-sports Tech</h3>
+                                <ul>${data.skills.mgmt || ''}</ul>
+                            </div>
+                        `;
+                    }
+                } 
+                else if (typeof data.skills === 'string') {
+                    const inputSkills = document.getElementById('input-skills');
+                    if (inputSkills) inputSkills.value = data.skills;
+                }
+            }
+
+            // Eventos / Intro
+            if (data.events) {
+                const el = document.getElementById('disp-events-intro');
+                if (el) el.innerHTML = data.events;
+                const inputEvents = document.getElementById('input-events');
+                if (inputEvents) inputEvents.value = data.events;
+            }
+
+            // Certificaciones
+            if (data.certs && Array.isArray(data.certs)) {
+                const tbody = document.getElementById('disp-certs');
+                if (tbody) {
+                    tbody.innerHTML = "";
+                    data.certs.forEach(cert => {
+                        tbody.innerHTML += `<tr><td><strong>${cert.curso}</strong></td><td>${cert.institucion}</td><td>${cert.fecha}</td></tr>`;
+                    });
+                }
+                const inputCerts = document.getElementById('input-certs');
+                if (inputCerts) {
+                    inputCerts.value = data.certs.map(c => `${c.curso} | ${c.institucion} | ${c.fecha}`).join('\n');
+                }
+            }
+
+            // Contacto y Redes Sociales
+            if (data.contact) {
+                if (data.contact.srv1) {
+                    if(document.getElementById('disp-srv1-title')) document.getElementById('disp-srv1-title').innerHTML = `<i class="fa-solid fa-screwdriver-wrench"></i> ${data.contact.srv1.title}`;
+                    if(document.getElementById('disp-srv1-desc')) document.getElementById('disp-srv1-desc').innerText = data.contact.srv1.desc;
+                    if(document.getElementById('input-srv1-title')) document.getElementById('input-srv1-title').value = data.contact.srv1.title;
+                    if(document.getElementById('input-srv1-desc')) document.getElementById('input-srv1-desc').value = data.contact.srv1.desc;
+                }
+                if (data.contact.srv2) {
+                    if(document.getElementById('disp-srv2-title')) document.getElementById('disp-srv2-title').innerHTML = `<i class="fa-solid fa-microchip"></i> ${data.contact.srv2.title}`;
+                    if(document.getElementById('disp-srv2-desc')) document.getElementById('disp-srv2-desc').innerText = data.contact.srv2.desc;
+                    if(document.getElementById('input-srv2-title')) document.getElementById('input-srv2-title').value = data.contact.srv2.title;
+                    if(document.getElementById('input-srv2-desc')) document.getElementById('input-srv2-desc').value = data.contact.srv2.desc;
+                }
+                if (data.contact.phone) {
+                    if(document.getElementById('disp-phone')) document.getElementById('disp-phone').innerText = data.contact.phone;
+                    if(document.getElementById('input-phone')) document.getElementById('input-phone').value = data.contact.phone;
+                }
+                if (data.contact.wsp) {
+                    if(document.getElementById('disp-wsp-link')) document.getElementById('disp-wsp-link').href = data.contact.wsp;
+                    if(document.getElementById('input-wsp')) document.getElementById('input-wsp').value = data.contact.wsp;
+                }
+                if (data.contact.fb) {
+                    if(document.getElementById('disp-fb-link')) document.getElementById('disp-fb-link').href = data.contact.fb;
+                    if(document.getElementById('input-fb')) document.getElementById('input-fb').value = data.contact.fb;
+                }
+                if (data.contact.tk) {
+                    if(document.getElementById('disp-tk-link')) document.getElementById('disp-tk-link').href = data.contact.tk;
+                    if(document.getElementById('input-tk')) document.getElementById('input-tk').value = data.contact.tk;
+                }
+            }
+        }
+    }).catch((error) => {
+        console.warn("Aviso: No se pudo conectar a Firestore.", error);
+    });
 }
 
 /* ==========================================================
-   PROYECTOS PERSONALES (Firestore + Cloudinary)
+   PROYECTOS PERSONALES
    ========================================================== */
 const projectForm = document.getElementById('project-form');
 if (projectForm) {
@@ -502,7 +416,7 @@ function deleteProject(id) {
 }
 
 /* ==========================================================
-   HOBBIES Y CARRUSEL (Firestore + Cloudinary)
+   HOBBIES Y CARRUSEL
    ========================================================== */
 const hobbyForm = document.getElementById('hobby-form');
 if (hobbyForm) {
