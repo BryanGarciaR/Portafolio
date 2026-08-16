@@ -23,12 +23,18 @@ body {
     min-height: 100vh; 
 }
 
-/* Ocultar elementos de administración por defecto */
+/* Ocultar elementos de administración por defecto (AÑADIDO AVATAR-OVERLAY) */
 body:not(.admin-mode) .admin-only,
 body:not(.admin-mode) .edit-btn,
 body:not(.admin-mode) .inline-edit-box,
-body:not(.admin-mode) #section-hobbies form {
+body:not(.admin-mode) #section-hobbies form,
+body:not(.admin-mode) .avatar-overlay {
     display: none !important;
+}
+
+/* Quitar el cursor de "mano" si no es administrador */
+body:not(.admin-mode) .avatar-container {
+    cursor: default !important;
 }
 
 /* Botón flotante de Modo Administrador */
@@ -143,7 +149,7 @@ aside {
     width: 100px; 
     height: 100px; 
     margin: 0 auto 20px; 
-    cursor: pointer; 
+    cursor: pointer; /* Por defecto pointer, pero el modo no-admin lo anula arriba */
 }
 
 .avatar-placeholder, .avatar-img { 
@@ -332,16 +338,44 @@ th { color: var(--accent); font-weight: 600; }
 .project-card h3 { color: var(--accent); margin-bottom: 8px; font-size: 1.1rem; }
 .project-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px; }
 
-.carousel-wrapper { width: 100%; overflow-x: auto; padding-bottom: 15px; margin-top: 15px; }
-.carousel { display: flex; gap: 20px; width: max-content; }
+/* ==========================================================
+   NUEVO CARRUSEL MULTIMEDIA (CSS GRID RESPONSIVE)
+   ========================================================== */
+.carousel-wrapper { 
+    width: 100%; 
+    overflow: hidden; /* Oculta el scroll horizontal */
+    padding-bottom: 15px; 
+    margin-top: 15px; 
+}
+
+.carousel { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Columnas dinámicas */
+    gap: 20px; 
+    width: 100%; 
+}
+
 .carousel-item { 
-    width: 280px; 
-    min-width: 280px; 
     background: rgba(15, 23, 42, 0.7); 
     padding: 15px; 
     border-radius: 12px; 
     border: 1px solid var(--border); 
+    width: 100%; 
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
+
+.carousel-item img,
+.carousel-item video {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+/* ========================================================== */
 
 .services-list { 
     display: grid; 
