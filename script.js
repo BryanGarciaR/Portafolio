@@ -1,9 +1,9 @@
 /* ==========================================================
-   CONFIGURACIÓN Y VARIABLES GLOBALES
+   CONFIGURACION Y VARIABLES GLOBALES
    ========================================================== */
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4ni5wxl/upload"; 
-const UPLOAD_PRESET = "portafolio_preset"; 
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4ni5wxl/upload";
+const UPLOAD_PRESET = "portafolio_preset";
 
 document.addEventListener('DOMContentLoaded', () => {
     aplicarModoAdminVisual();
@@ -13,11 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================
-   GESTIÓN DE ADMINISTRADOR
+   GESTION DE ADMINISTRADOR
    ========================================================== */
 function verificarAdmin() {
     if (isAdmin) {
-        if (confirm('¿Deseas cerrar sesión de Administrador?')) {
+        if (confirm('¿Deseas cerrar sesion de Administrador?')) {
             sessionStorage.removeItem('portfolio_admin');
             isAdmin = false;
             location.reload();
@@ -48,21 +48,11 @@ function aplicarModoAdminVisual() {
 }
 
 /* ==========================================================
-   NAVEGACIÓN ENTRE VISTAS
-   ========================================================== */
-function switchView(viewId, btnElement) {
-    document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
-    document.getElementById(viewId)?.classList.add('active');
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    btnElement?.classList.add('active');
-}
-
-/* ==========================================================
-   EDICIÓN EN LÍNEA (CORREGIDO Y UNIFICADO)
+   EDICION EN LINEA (CORREGIDO)
    ========================================================== */
 function toggleEdit(sectionKey) {
     if (!isAdmin) { verificarAdmin(); return; }
-    const editBox = document.getElementById(`edit-box-${sectionKey}`);
+    const editBox = document.getElementById('edit-box-' + sectionKey);
     if (!editBox) return;
 
     const isActive = editBox.classList.contains('active');
@@ -88,14 +78,14 @@ function toggleEdit(sectionKey) {
 }
 
 function saveEdit(sectionKey) {
-    if (!isAdmin) { alert('Acción no permitida'); return; }
+    if (!isAdmin) { alert('Accion no permitida'); return; }
     let savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
 
-    const editBox = document.getElementById(`edit-box-${sectionKey}`);
+    const editBox = document.getElementById('edit-box-' + sectionKey);
     const inputElement = editBox ? editBox.querySelector('textarea') : null;
 
     if (!inputElement) {
-        alert("Error técnico: No se encontró el área de edición.");
+        alert("Error tecnico: No se encontro el area de edicion.");
         return;
     }
 
@@ -121,16 +111,7 @@ function saveEdit(sectionKey) {
     toggleEdit(sectionKey);
 }
 
-/* ==========================================================
-   CARGA DE DATOS LOCALES
-   ========================================================== */
 function cargarDatosLocales() {
-    const savedAvatar = localStorage.getItem('portfolio_avatar');
-    if (savedAvatar) {
-        const wrapper = document.getElementById('avatar-display-wrapper');
-        if (wrapper) wrapper.innerHTML = `<img src="${savedAvatar}" class="avatar-img" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-    }
-
     const savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
     const targets = [
         { key: 'profile', id: 'disp-profile', type: 'text' },
@@ -148,57 +129,4 @@ function cargarDatosLocales() {
             }
         }
     });
-}
-
-/* ==========================================================
-   SUBIDA DE IMÁGENES / PROYECTOS / HOBBIES (SE MANTIENE)
-   ========================================================== */
-async function subirImagenCloudinary(file) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", UPLOAD_PRESET);
-    const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
-    const data = await res.json();
-    if (!data.secure_url) throw new Error("Error en Cloudinary");
-    return data.secure_url;
-}
-
-function updateAvatar(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            localStorage.setItem('portfolio_avatar', e.target.result);
-            document.getElementById('avatar-display-wrapper').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-function renderProjectsFromStorage() {
-    const container = document.getElementById('projects-container');
-    if (!container || !window.onSnapshot) return;
-    window.onSnapshot(window.collection(window.db, "projects"), (snapshot) => {
-        container.innerHTML = '';
-        snapshot.forEach((docSnap) => {
-            const p = docSnap.data();
-            container.innerHTML += `<div class="project-card"><h3>${p.title}</h3><p>${p.desc}</p></div>`;
-        });
-    });
-}
-
-function renderHobbiesFromStorage() {
-    const container = document.getElementById('carousel-container');
-    if (!container || !window.onSnapshot) return;
-    window.onSnapshot(window.collection(window.db, "hobbies"), (snapshot) => {
-        container.innerHTML = '';
-        snapshot.forEach((docSnap) => {
-            const h = docSnap.data();
-            container.innerHTML += `<div class="carousel-item"><h4>${h.title}</h4></div>`;
-        });
-    });
-}
-
-async function eliminar(col, id) {
-    if (confirm('¿Eliminar?')) await window.deleteDoc(window.doc(window.db, col, id));
 }
