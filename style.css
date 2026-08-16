@@ -77,8 +77,8 @@ th { color: var(--accent); font-weight: 600; }
 .project-card h3 { color: var(--accent); margin-bottom: 8px; font-size: 1.1rem; }
 .project-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px; }
 
-/* --- SECCIÓN CARRUSEL (MODIFICADA) --- */
-.carousel-wrapper { width: 100%; }
+/* --- SECCIÓN CARRUSEL CORREGIDA --- */
+.carousel-wrapper { width: 100%; overflow-x: hidden; }
 .carousel { 
     display: flex; 
     gap: 20px; 
@@ -86,9 +86,9 @@ th { color: var(--accent); font-weight: 600; }
     overflow-x: auto; 
     scroll-behavior: smooth; 
     padding-bottom: 15px; 
+    scrollbar-width: none; 
 }
 .carousel::-webkit-scrollbar { display: none; }
-.carousel { scrollbar-width: none; }
 .carousel-item { 
     width: 280px; 
     min-width: 280px; 
