@@ -5,8 +5,19 @@
     --text-muted: #94a3b8;
     --border: #334155;
 }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #020617; color: var(--text-main); line-height: 1.6; padding: 20px; overflow-x: hidden; position: relative; min-height: 100vh; }
+
+body { 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+    background-color: #020617; 
+    color: var(--text-main); 
+    line-height: 1.6; 
+    padding: 20px; 
+    overflow-x: hidden; 
+    position: relative; 
+    min-height: 100vh; 
+}
 
 .tech-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: linear-gradient(125deg, #020617 0%, #090d16 50%, #0f172a 100%); overflow: hidden; }
 .tech-bg::before { content: ""; position: absolute; width: 300%; height: 300%; top: -100%; left: -100%; background-image: linear-gradient(to right, rgba(56, 189, 248, 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 50px 50px; animation: moveGrid 20s linear infinite; }
@@ -66,25 +77,25 @@ th { color: var(--accent); font-weight: 600; }
 .project-card h3 { color: var(--accent); margin-bottom: 8px; font-size: 1.1rem; }
 .project-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px; }
 
-/* Sección de Hobbies / Carrusel adaptada a Grid limpia */
-.carousel-wrapper {
-    width: 100%;
-    overflow: visible;
+/* --- SECCIÓN CARRUSEL (MODIFICADA) --- */
+.carousel-wrapper { width: 100%; }
+.carousel { 
+    display: flex; 
+    gap: 20px; 
+    width: 100%; 
+    overflow-x: auto; 
+    scroll-behavior: smooth; 
+    padding-bottom: 15px; 
 }
-.carousel {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-    width: 100%;
-    overflow-x: hidden;
-    padding-bottom: 10px;
-}
+.carousel::-webkit-scrollbar { display: none; }
+.carousel { scrollbar-width: none; }
 .carousel-item { 
+    width: 280px; 
+    min-width: 280px; 
     background: rgba(15, 23, 42, 0.7); 
     padding: 15px; 
     border-radius: 12px; 
     border: 1px solid var(--border); 
-    width: 100%; /* Se ajusta de forma fluida a la columna de la cuadrícula */
 }
 
 .services-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
