@@ -22,11 +22,13 @@ const CLOUDINARY_PRESET = "portafolio_preset";
 
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
 
+
 document.addEventListener('DOMContentLoaded', () => {
     aplicarModoAdminVisual();
     cargarDatosRemotos();
     cargarProyectosFirestore();
     cargarHobbiesFirestore();
+    
 });
 
 /* ==========================================================
@@ -52,25 +54,27 @@ function verificarAdmin() {
 }
 
 function aplicarModoAdminVisual() {
-    // 1. Cambiar icono del botón flotante inferior derecho
+    // 1. Cambiar icono del botón flotante
     const lockIcon = document.getElementById('admin-lock-icon');
     if (lockIcon) {
         lockIcon.className = isAdmin ? "fa-solid fa-unlock" : "fa-solid fa-lock";
     }
 
-    // 2. Mostrar u ocultar el icono de la cámara del avatar
-    const avatarEditBtn = document.querySelector('.avatar-edit-btn'); // O la clase/id que tenga tu botón de la cámara
-    if (avatarEditBtn) {
-        avatarEditBtn.style.display = isAdmin ? 'flex' : 'none'; // o 'block' según uses
+    // 2. CONTROL DEL AVATAR (Aquí está la solución)
+    const avatarBtn = document.getElementById('admin-avatar-btn');
+    if (avatarBtn) {
+        // Si no es admin, ocultamos el contenedor (display: none)
+        // Si es admin, lo mostramos (display: flex o el que corresponda)
+        avatarBtn.style.display = isAdmin ? 'flex' : 'none';
     }
 
-    // 3. Mostrar u ocultar botones de modificar en las secciones
+    // 3. Control de botones de modificar
     const editBtns = document.querySelectorAll('.edit-btn');
     editBtns.forEach(btn => {
         btn.style.display = isAdmin ? 'inline-block' : 'none';
     });
 
-    // 4. Mostrar u ocultar formularios de subida (Proyectos y Hobbies)
+    // 4. Control de formularios de subida
     const projectForm = document.getElementById('project-form');
     if (projectForm) {
         projectForm.parentElement.style.display = isAdmin ? 'block' : 'none';
