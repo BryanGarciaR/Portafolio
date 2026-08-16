@@ -1,125 +1,292 @@
+/* ==========================================================
+   CONFIGURACIÓN Y VARIABLES GLOBALES
+   ========================================================== */
+let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4ni5wxl/upload"; 
+const UPLOAD_PRESET = "portafolio_preset"; 
+
+document.addEventListener('DOMContentLoaded', () => {
+    aplicarModoAdminVisual();
+    cargarDatosLocales();
+    renderProjectsFromStorage();
+    renderHobbiesFromStorage();
+});
+
+/* ==========================================================
+   GESTIÓN DE ADMINISTRADOR
+   ========================================================== */
+function verificarAdmin() {
+    if (isAdmin) {
+        if (confirm('¿Deseas cerrar sesión de Administrador?')) {
+            sessionStorage.removeItem('portfolio_admin');
+            isAdmin = false;
+            location.reload();
+        }
+        return;
+    }
+    const pass = prompt('Ingrese la contraseña de Administrador:');
+    if (pass === 'bryan2026') {
+        sessionStorage.setItem('portfolio_admin', 'true');
+        isAdmin = true;
+        location.reload();
+    } else if (pass !== null) {
+        alert('Contraseña incorrecta.');
+    }
+}
+
+function aplicarModoAdminVisual() {
+    const adminElements = document.querySelectorAll('.admin-only');
+    adminElements.forEach(el => el.style.setProperty('display', isAdmin ? 'block' : 'none', 'important'));
+    const lockIcon = document.getElementById('admin-lock-icon');
+    if (lockIcon) {
+        lockIcon.className = isAdmin ? "fa-solid fa-unlock" : "fa-solid fa-lock";
+    }
+}
+
+/* ==========================================================
+   NAVEGACIÓN ENTRE VISTAS
+   ========================================================== */
+function switchView(viewId, btnElement) {
+    const views = document.querySelectorAll('.view-section');
+    views.forEach(view => view.classList.remove('active'));
+
+    const targetView = document.getElementById(viewId);
+    if (targetView) {
+        targetView.classList.add('active');
+    }
+
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    if (btnElement) {
+        btnElement.classList.add('active');
+    }
+}
+
+/* ==========================================================
+   EDICIÓN EN LÍNEA
+   ========================================================== */
+function toggleEdit(sectionKey) {
+    if (!isAdmin) { verificarAdmin(); return; }
+    const editBox = document.getElementById(`edit-box-${sectionKey}`);
+    if (!editBox) return;
+
+    const isActive = editBox.classList.contains('active');
+
+    if (!isActive) {
+        if (sectionKey === 'profile') {
+            const disp = document.getElementById('disp-profile');
+            const input = document.getElementById('input-profile');
+            if (disp && input) input.value = disp.innerText.trim();
+        } else if (sectionKey === 'skills') {
+            for(let i=1; i<=3; i++) {
+                const t = document.getElementById(`disp-skill${i}-title`);
+                const d = document.getElementById(`disp-skill${i}-desc`);
+                const it = document.getElementById(`input-skill${i}-title`);
+                const id = document.getElementById(`input-skill${i}-desc`);
+                if (t && it) it.value = t.innerText.trim();
+                if (d && id) id.value = d.innerText.trim();
+            }
+        } else if (sectionKey === 'events') {
+            const disp = document.getElementById('disp-events-intro');
+            const input = document.getElementById('input-events');
+            if (disp && input) input.value = disp.innerText.trim();
+        } else if (sectionKey === 'certs') {
+            const disp = document.getElementById('disp-certs');
+            const input = document.getElementById('input-certs');
+            if (disp && input) input.value = disp.innerText.trim();
+        }
+    }
+
+    editBox.classList.toggle('active');
+}
+
+function saveEdit(sectionKey) {
+    if (!isAdmin) { alert('Acción no permitida'); return; }
+    let savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
+
+    if (sectionKey === 'profile') {
+        const val = document.getElementById('input-profile').value;
+        const disp = document.getElementById('disp-profile');
+        if (disp) disp.innerText = val;
+        savedData['profile'] = val;
+    } else if (sectionKey === 'skills') {
+        let skillsObj = {};
+        for(let i=1; i<=3; i++) {
+            const tVal = document.getElementById(`input-skill${i}-title`).value;
+            const dVal = document.getElementById(`input-skill${i}-desc`).value;
+            skillsObj[`s${i}t`] = tVal;
+            skillsObj[`s${i}d`] = dVal;
+
+            const dt = document.getElementById(`disp-skill${i}-title`);
+            const dd = document.getElementById(`disp-skill${i}-desc`);
+            if (dt) dt.innerText = tVal;
+            if (dd) dd.innerText = dVal;
+        }
+        savedData['skills'] = skillsObj;
+    } else if (sectionKey === 'events') {
+        const val = document.getElementById('input-events').value;
+        const disp = document.getElementById('disp-events-intro');
+        if (disp) disp.innerText = val;
+        savedData['events'] = val;
+    } else if (sectionKey === 'certs') {
+        const val = document.getElementById('input-certs').value;
+        const disp = document.getElementById('disp-certs');
+        if (disp) disp.innerText = val;
+        savedData['certs'] = val;
+    }
+
+    localStorage.setItem('portfolio_edits', JSON.stringify(savedData));
+    toggleEdit(sectionKey);
+    alert('¡Cambios guardados con éxito!');
+}
+
+/* ==========================================================
+   SUBIDA DE IMÁGENES Y AVATAR
+   ========================================================== */
+async function subirImagenCloudinary(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+    const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+    const data = await res.json();
+    if (!data.secure_url) throw new Error("No se pudo obtener la URL de Cloudinary");
+    return data.secure_url;
+}
+
+function triggerAvatarUpload() {
+    if (!isAdmin) {
+        alert("Debes ser administrador para cambiar la foto");
+        return;
+    }
+    const fileInput = document.getElementById('avatar-file-input');
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
 function updateAvatar(event) {
+    if (!isAdmin) {
+        alert("Debes ser administrador para cambiar la foto");
+        return;
+    }
+    
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            document.getElementById('avatar-display-wrapper').innerHTML = `<img src="${e.target.result}" alt="Avatar" class="avatar-img">`;
-        }
+            localStorage.setItem('portfolio_avatar', e.target.result);
+            const wrapper = document.getElementById('avatar-display-wrapper');
+            if (wrapper) {
+                wrapper.innerHTML = `<img src="${e.target.result}" class="avatar-img" id="profile-avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            }
+            alert('¡Foto de perfil actualizada!');
+        };
         reader.readAsDataURL(file);
     }
 }
 
-function switchView(viewId, buttonElement) {
-    document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
-    buttonElement.classList.add('active');
+/* ==========================================================
+   PROYECTOS Y HOBBIES (FIREBASE / LOCAL)
+   ========================================================== */
+function renderProjectsFromStorage() {
+    const container = document.getElementById('projects-container');
+    if (!container || !window.onSnapshot) return;
+    window.onSnapshot(window.collection(window.db, "projects"), (snapshot) => {
+        container.innerHTML = '';
+        if (snapshot.empty) {
+            container.innerHTML = '<p style="color: #aaa; text-align: center;">No hay proyectos publicados.</p>';
+            return;
+        }
+        snapshot.forEach((docSnap) => {
+            const p = docSnap.data();
+            const id = docSnap.id;
+            container.innerHTML += `
+                <div class="project-card">
+                    <div class="project-img-container"><img src="${p.img}" class="project-img"></div>
+                    <div class="project-content">
+                        <h3>${p.title}</h3>
+                        <p>${p.desc}</p>
+                        ${p.link ? `<a href="${p.link}" target="_blank" style="color: var(--accent); font-size: 0.9rem;">Ver enlace ↗</a>` : ''}
+                        ${isAdmin ? `<br><button class="delete-card-btn" onclick="eliminar('projects', '${id}')">Eliminar Proyecto</button>` : ''}
+                    </div>
+                </div>`;
+        });
+    });
 }
 
-function toggleEdit(sectionKey) {
-    const box = document.getElementById(`edit-box-${sectionKey}`);
-    box.classList.toggle('active');
-    if (box.classList.contains('active')) {
-        if (sectionKey === 'profile') {
-            document.getElementById('input-profile').value = document.getElementById('disp-profile').innerText;
-        } else if (sectionKey === 'events') {
-            document.getElementById('input-events').value = document.getElementById('disp-events-intro').innerText;
-        } else if (sectionKey === 'contact') {
-            document.getElementById('input-srv1-title').value = document.getElementById('disp-srv1-title').innerText.replace(/^\S+\s*/, '');
-            document.getElementById('input-srv1-desc').value = document.getElementById('disp-srv1-desc').innerText;
-            document.getElementById('input-srv2-title').value = document.getElementById('disp-srv2-title').innerText.replace(/^\S+\s*/, '');
-            document.getElementById('input-srv2-desc').value = document.getElementById('disp-srv2-desc').innerText;
-            document.getElementById('input-phone').value = document.getElementById('disp-phone').innerText;
-            document.getElementById('input-wsp').value = document.getElementById('disp-wsp-link').getAttribute('href');
-            document.getElementById('input-fb').value = document.getElementById('disp-fb-link').getAttribute('href');
-            document.getElementById('input-tk').value = document.getElementById('disp-tk-link').getAttribute('href');
+function renderHobbiesFromStorage() {
+    const container = document.getElementById('carousel-container');
+    if (!container || !window.onSnapshot) return;
+    window.onSnapshot(window.collection(window.db, "hobbies"), (snapshot) => {
+        container.innerHTML = '';
+        if (snapshot.empty) {
+            container.innerHTML = '<p style="color: #aaa; font-size: 0.9rem;">No hay elementos.</p>';
+            return;
+        }
+        snapshot.forEach((docSnap) => {
+            const h = docSnap.data();
+            const id = docSnap.id;
+            const esVideo = h.media.includes('.mp4') || h.media.includes('.webm') || h.media.includes('/video/upload/');
+            const multimediaHtml = esVideo 
+                ? `<video src="${h.media}" controls style="width:100%; height:120px; object-fit:cover; border-radius: 6px; margin: 8px 0;"></video>`
+                : `<img src="${h.media}" style="width:100%; height:120px; object-fit:cover; border-radius: 6px; margin: 8px 0;">`;
+
+            container.innerHTML += `
+                <div class="carousel-item">
+                    <span style="font-size: 0.75rem; color: var(--accent); font-weight: bold;">[${h.cat}]</span>
+                    <h4 style="color: #fff; margin: 5px 0; font-size: 1rem;">${h.title}</h4>
+                    ${multimediaHtml}
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">${h.desc || ''}</p>
+                    ${isAdmin ? `<button class="delete-card-btn" onclick="eliminar('hobbies', '${id}')">Eliminar</button>` : ''}
+                </div>`;
+        });
+    });
+}
+
+async function eliminar(col, id) {
+    if (confirm('¿Deseas eliminar este elemento?')) {
+        try {
+            await window.deleteDoc(window.doc(window.db, col, id));
+            alert('Eliminado correctamente.');
+        } catch (err) {
+            alert('Error: ' + err.message);
         }
     }
 }
 
-function saveEdit(sectionKey) {
-    if (sectionKey === 'profile') {
-        document.getElementById('disp-profile').innerText = document.getElementById('input-profile').value;
-    } else if (sectionKey === 'events') {
-        document.getElementById('disp-events-intro').innerHTML = document.getElementById('input-events').value;
-    } else if (sectionKey === 'contact') {
-        const srv1Title = document.getElementById('input-srv1-title').value;
-        const srv1Desc = document.getElementById('input-srv1-desc').value;
-        const srv2Title = document.getElementById('input-srv2-title').value;
-        const srv2Desc = document.getElementById('input-srv2-desc').value;
-        const phone = document.getElementById('input-phone').value;
-        const wsp = document.getElementById('input-wsp').value;
-        const fb = document.getElementById('input-fb').value;
-        const tk = document.getElementById('input-tk').value;
-
-        document.getElementById('disp-srv1-title').innerHTML = `<i class="fa-solid fa-screwdriver-wrench"></i> ${srv1Title}`;
-        document.getElementById('disp-srv1-desc').innerText = srv1Desc;
-        document.getElementById('disp-srv2-title').innerHTML = `<i class="fa-solid fa-microchip"></i> ${srv2Title}`;
-        document.getElementById('disp-srv2-desc').innerText = srv2Desc;
-        document.getElementById('disp-phone').innerText = phone;
-        document.getElementById('disp-wsp-link').setAttribute('href', wsp);
-        document.getElementById('disp-fb-link').setAttribute('href', fb);
-        document.getElementById('disp-tk-link').setAttribute('href', tk);
+/* ==========================================================
+   CARGA DE DATOS LOCALES Y PERSISTENCIA
+   ========================================================== */
+function cargarDatosLocales() {
+    const savedAvatar = localStorage.getItem('portfolio_avatar');
+    if (savedAvatar) {
+        const wrapper = document.getElementById('avatar-display-wrapper');
+        if (wrapper) {
+            wrapper.innerHTML = `<img src="${savedAvatar}" class="avatar-img" id="profile-avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        }
     }
-    toggleEdit(sectionKey);
-    alert('¡Modificación guardada con éxito!');
+
+    const savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
+    
+    if (savedData['profile']) {
+        const disp = document.getElementById('disp-profile');
+        if (disp) disp.innerText = savedData['profile'];
+    }
+    if (savedData['skills']) {
+        const s = savedData['skills'];
+        for(let i=1; i<=3; i++) {
+            const dt = document.getElementById(`disp-skill${i}-title`);
+            const dd = document.getElementById(`disp-skill${i}-desc`);
+            if(dt) dt.innerText = s[`s${i}t`];
+            if(dd) dd.innerText = s[`s${i}d`];
+        }
+    }
+    if (savedData['events']) {
+        const disp = document.getElementById('disp-events-intro');
+        if (disp) disp.innerText = savedData['events'];
+    }
+    if (savedData['certs']) {
+        const disp = document.getElementById('disp-certs');
+        if (disp) disp.innerText = savedData['certs'];
+    }
 }
-
-document.getElementById('project-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const title = document.getElementById('proj-title').value;
-    const desc = document.getElementById('proj-desc').value;
-    const link = document.getElementById('proj-link').value.trim();
-    const imageInput = document.getElementById('proj-img');
-
-    if (imageInput.files && imageInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const container = document.getElementById('projects-container');
-            const card = document.createElement('div');
-            card.className = 'project-card';
-            let linkHTML = link !== '' ? `<a href="${link}" target="_blank" class="project-link" style="color:var(--accent);">Ver Repositorio ➔</a>` : '';
-            card.innerHTML = `
-                <div class="project-img-container"><img src="${e.target.result}" class="project-img"></div>
-                <div class="project-content">
-                    <h3>${title}</h3>
-                    <p>${desc}</p>
-                    ${linkHTML}
-                </div>
-            `;
-            container.prepend(card);
-            document.getElementById('project-form').reset();
-            alert('¡Proyecto publicado!');
-        }
-        reader.readAsDataURL(imageInput.files[0]);
-    }
-});
-
-document.getElementById('hobby-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const cat = document.getElementById('hobby-category').value;
-    const title = document.getElementById('hobby-title').value;
-    const desc = document.getElementById('hobby-desc').value;
-    const mediaInput = document.getElementById('hobby-media');
-
-    if (mediaInput.files && mediaInput.files[0]) {
-        const file = mediaInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const container = document.getElementById('carousel-container');
-            const item = document.createElement('div');
-            item.className = 'carousel-item';
-            let mediaHTML = file.type.startsWith('video/') ? `<video src="${e.target.result}" controls style="width:100%; height:140px; object-fit:cover;"></video>` : `<img src="${e.target.result}" style="width:100%; height:140px; object-fit:cover;">`;
-            item.innerHTML = `
-                <span style="color:var(--accent); font-size:0.75rem; text-transform:uppercase; font-weight:bold;">${cat}</span>
-                <div style="margin:10px 0; border-radius:8px; overflow:hidden;">${mediaHTML}</div>
-                <h3 style="font-size:1rem; color:#fff; margin-bottom:5px;">${title}</h3>
-                <p style="font-size:0.85rem; color:var(--text-muted);">${desc}</p>
-            `;
-            container.prepend(item);
-            document.getElementById('hobby-form').reset();
-            alert('¡Multimedia agregada!');
-        }
-        reader.readAsDataURL(file);
-    }
-});
