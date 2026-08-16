@@ -116,12 +116,8 @@ async function subirACloudinary(file) {
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_PRESET);
 
-    // 1. Detectar si es video o imagen
-    const isVideo = file.type.startsWith('video');
-    const resourceType = isVideo ? 'video' : 'image';
-    
-    // 2. URL dinámica de Cloudinary dependiendo del tipo de archivo
-    const uploadEndpoint = `https://api.cloudinary.com/v1_1/n4ni5wxl/${resourceType}/upload`;
+    // Usar 'auto' es la forma más segura. Cloudinary detectará automáticamente el tipo.
+    const uploadEndpoint = `https://api.cloudinary.com/v1_1/n4ni5wxl/auto/upload`;
 
     try {
         const response = await fetch(uploadEndpoint, {
@@ -131,16 +127,71 @@ async function subirACloudinary(file) {
         const data = await response.json();
         
         if (data.secure_url) {
+            console.log("Subida exitosa:", data.secure_url);
             return data.secure_url;
         } else {
-            console.error("Detalle Cloudinary:", data);
-            throw new Error(data.error?.message || 'Error desconocido de Cloudinary');
+            console.error("Detalle del error de Cloudinary:", data);
+            // Mostrar el error real (ej. si el video pesa más de lo que permite tu plan gratuito)
+            alert(`Error de Cloudinary: ${data.error?.message || 'Archivo no aceptado'}`);
+            return null;
         }
     } catch (error) {
-        console.error("Cloudinary Error:", error);
-        alert(`Hubo un error al subir el ${isVideo ? 'video' : 'archivo'}. Verifica tu conexión o el formato.`);
+        console.error("Error de conexión:", error);
+        alert('Hubo un error de conexión al intentar subir el archivo.');
         return null;
     }
+}
+
+/* ==========================================================
+   HOBBIES Y CARRUSEL (Formulario Seguro)
+   ========================================================== */
+const hobbyForm = document.getElementById('hobby-form');
+if (hobbyForm) {
+    hobbyForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        if (!isAdmin) { alert('No tienes permisos de administrador'); return; }
+
+        const category = document.getElementById('hobby-category').value;
+        const title = document.getElementById('hobby-title').value;
+        const desc = document.getElementById('hobby-desc').value;
+        const mediaInput = document.getElementById('hobby-media');
+
+        let mediaUrl = '';
+        let type = 'image';
+
+        if (mediaInput && mediaInput.files && mediaInput.files[0]) {
+            const file = mediaInput.files[0];
+            type = file.type.startsWith('video') ? 'video' : 'image';
+            
+            // Los videos pesados toman unos segundos extra
+            alert('Subiendo archivo a la nube... Por favor, no cierres esta ventana. Los videos pueden tardar unos segundos.');
+            
+            mediaUrl = await subirACloudinary(file);
+
+            // NUEVO: Si Cloudinary falló (mediaUrl es null), detenemos TODO.
+            if (!mediaUrl) {
+                alert('❌ Operación cancelada: No se pudo subir el archivo multimedia.');
+                return; // Corta la ejecución, NO guarda los textos en Firebase.
+            }
+        }
+
+        try {
+            await db.collection('hobbies').add({
+                category,
+                title,
+                desc,
+                media: mediaUrl,
+                type,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert('✅ ¡Elemento guardado con éxito!');
+            hobbyForm.reset();
+            cargarHobbiesFirestore();
+        } catch (error) {
+            console.error("Error al guardar hobby en Firebase:", error);
+            alert('Hubo un error al registrar los datos en Firebase.');
+        }
+    });
 }
 
 /* ==========================================================
