@@ -162,7 +162,7 @@ aside {
     aspect-ratio: 1 / 1;
 
     /* --- JUEGA CON ESTO (X Y, ej. 50% centro horizontal, 20% más arriba de lo normal) --- */
-    object-position: 70% 20%;
+    object-position: 50% 40%;
 }
 
 .avatar-placeholder {
