@@ -57,7 +57,7 @@ function syncAdminState(enabled) {
 
     // 2. Ocultar/Mostrar el icono de la cámara en el avatar
     const avatarOverlay = document.querySelector('.avatar-overlay');
-    const avatarContainer = document.querySelector('.avatar-container');
+    
     
     if (avatarOverlay) {
         avatarOverlay.style.display = enabled ? 'flex' : 'none';
@@ -244,19 +244,7 @@ function deleteHobby(id) {
 
     
     const avatarContainer = document.querySelector('.avatar-container');
-    const avatarInput = document.getElementById('avatar-input'); 
-
-    if (avatarContainer && avatarInput) {
-        avatarContainer.addEventListener('click', () => {
-            // Si NO es admin, no hacemos nada
-            if (!isAdmin) {
-                return; 
-            }
-            // Si SÍ es admin, abrimos el selector de archivos
-            avatarInput.click();
-        });
-    }
-);
+    
 /* ==========================================================
    GESTIÓN DE AVATAR
    ========================================================== */
