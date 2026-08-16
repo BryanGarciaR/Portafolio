@@ -88,13 +88,14 @@ function aplicarModoAdminVisual() {
    NAVEGACIÓN ENTRE VISTAS
    ========================================================== */
 function switchView(viewId, buttonElement) {
-    // 1. Ocultar todas las secciones de vista
+    // 1. Ocultar todas las vistas forzando el estilo si es necesario
     const sections = document.querySelectorAll('.view-section');
     sections.forEach(section => {
         section.classList.remove('active');
+        section.style.display = 'none'; // Forzamos ocultado
     });
 
-    // 2. Remover la clase activa de todos los botones del menú
+    // 2. Quitar la clase active de todos los botones
     const navButtons = document.querySelectorAll('.nav-btn');
     navButtons.forEach(btn => {
         btn.classList.remove('active');
@@ -104,6 +105,7 @@ function switchView(viewId, buttonElement) {
     const targetSection = document.getElementById(viewId);
     if (targetSection) {
         targetSection.classList.add('active');
+        targetSection.style.display = 'flex'; // Forzamos que se muestre como flex
     }
 
     // 4. Activar el botón presionado
