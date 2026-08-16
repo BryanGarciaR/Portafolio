@@ -23,6 +23,7 @@ const ADMIN_PASSWORD = "bryan2026";
 
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
 
+
 /* ==========================================================
    INICIALIZACIÓN DE LA PÁGINA
    ========================================================== */
@@ -539,12 +540,19 @@ function cargarProyectosFirestore() {
         querySnapshot.forEach((doc) => {
             const p = doc.data();
             const id = doc.id;
+
+            // Formatear la descripción si contiene asteriscos o si es ese proyecto en específico
+            let formattedDesc = p.desc || '';
+            if (p.title && p.title.includes("Gestión de Proyectos & E-sports Tech")) {
+                formattedDesc = formattedDesc.replaceAll('*', '<br>•');
+            }
+
             container.innerHTML += `
                 <div class="project-card">
                     ${p.img ? `<div class="project-img-container"><img src="${p.img}" alt="${p.title}" class="project-img"></div>` : ''}
                     <div class="project-content">
                         <h3>${p.title}</h3>
-                        <p>${p.desc}</p>
+                        <p>${formattedDesc}</p>
                         ${p.link ? `<a href="${p.link}" target="_blank" style="color: var(--accent); text-decoration: underline; font-size: 0.85rem; display:inline-block; margin-bottom:10px;">Ver Enlace</a>` : ''}
                         ${isAdmin ? `<button onclick="deleteProject('${id}')" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: block; width: 100%;">Eliminar</button>` : ''}
                     </div>
