@@ -57,6 +57,33 @@ function aplicarModoAdminVisual() {
         btn.style.display = isAdmin ? 'inline-block' : 'none';
     });
 }
+const ADMIN_PASSWORD = "bryan2026"; 
+
+function toggleAdminMode() {
+    const isCurrentlyAdmin = document.body.classList.contains('admin-mode');
+    
+    if (isCurrentlyAdmin) {
+        // Si ya está activo, lo desactiva
+        document.body.classList.remove('admin-mode');
+        document.getElementById('adminToggleBtn').innerHTML = "🔒 Modo Admin";
+        alert("Se ha cerrado el modo administrador.");
+    } else {
+        // Si está desactivado, pide contraseña
+        let pass = prompt("Ingrese la contraseña de administrador:");
+        if (pass === ADMIN_PASSWORD) {
+            document.body.classList.add('admin-mode');
+            document.getElementById('adminToggleBtn').innerHTML = "🔓 Salir Admin";
+            alert("¡Modo administrador activado con éxito!");
+        } else if (pass !== null) {
+            alert("Contraseña incorrecta.");
+        }
+    }
+}
+
+// Asegurarse de que al cargar la página NUNCA inicie en modo admin
+document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.remove('admin-mode');
+});
 
 /* ==========================================================
    NAVEGACIÓN ENTRE VISTAS
