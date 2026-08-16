@@ -63,33 +63,45 @@
                 <div class="skills-grid" id="disp-skills-container">
                     <div class="skill-box">
                         <h3>Desarrollo y Debugging</h3>
-                        <ul><li>Python (Scripts, POO, Módulos)</li><li>Depuración de Conexiones Cliente-Servidor</li><li>Automatización de Procesos</li></ul>
+                        <ul>
+                            <li>Python (Scripts, POO, Módulos)</li>
+                            <li>Depuración de Conexiones Cliente-Servidor</li>
+                            <li>Automatización de Procesos</li>
+                        </ul>
                     </div>
                     <div class="skill-box">
                         <h3>Infraestructura & Redes</h3>
-                        <ul><li>IT Essentials & Cisco Networking</li><li>Sistemas Operativos (Linux, Windows)</li><li>Implementación y soporte de Redes LAN</li></ul>
+                        <ul>
+                            <li>IT Essentials & Cisco Networking</li>
+                            <li>Sistemas Operativos (Linux, Windows)</li>
+                            <li>Implementación y soporte de Redes LAN</li>
+                        </ul>
                     </div>
                     <div class="skill-box">
                         <h3>Gestión y E-sports Tech</h3>
-                        <ul><li>Configuración ITGMania / Pump It Up</li><li>Gestión de Data Sheets y Standings</li><li>Scrum Fundamentals & Metodologías Ágiles</li></ul>
+                        <ul>
+                            <li>Configuración ITGMania / Pump It Up</li>
+                            <li>Gestión de Data Sheets y Standings</li>
+                            <li>Scrum Fundamentals & Metodologías Ágiles</li>
+                        </ul>
                     </div>
                 </div>
                 <div id="edit-box-skills" class="inline-edit-box">
-    <div class="form-group">
-        <label>Desarrollo y Debugging:</label>
-        <textarea id="input-skills-dev" style="height: 60px;"></textarea>
-    </div>
-    <div class="form-group">
-        <label>Infraestructura & Redes:</label>
-        <textarea id="input-skills-infra" style="height: 60px;"></textarea>
-    </div>
-    <div class="form-group">
-        <label>Gestión y E-sports Tech:</label>
-        <textarea id="input-skills-mgmt" style="height: 60px;"></textarea>
-    </div>
-    <button class="submit-btn" onclick="saveEdit('skills')">Guardar Cambios</button>
-    <button class="cancel-btn" onclick="toggleEdit('skills')">Cancelar</button>
-</div>
+                    <div class="form-group">
+                        <label>Desarrollo y Debugging:</label>
+                        <textarea id="input-skills-dev" style="height: 60px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Infraestructura & Redes:</label>
+                        <textarea id="input-skills-infra" style="height: 60px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Gestión y E-sports Tech:</label>
+                        <textarea id="input-skills-mgmt" style="height: 60px;"></textarea>
+                    </div>
+                    <button class="submit-btn" onclick="saveEdit('skills')">Guardar Cambios</button>
+                    <button class="cancel-btn" onclick="toggleEdit('skills')">Cancelar</button>
+                </div>
             </section>
 
             <section class="card" id="section-events">
@@ -105,7 +117,13 @@
             <section class="card" id="section-certs">
                 <h2>Credenciales Académicas & Certificaciones <button class="edit-btn" onclick="toggleEdit('certs')">✏️ Modificar</button></h2>
                 <table>
-                    <thead><tr><th>Certificación / Curso</th><th>Institución / Enfoque</th><th>Fecha</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Certificación / Curso</th>
+                            <th>Institución / Enfoque</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
                     <tbody id="disp-certs">
                         <tr><td><strong>Scrum Fundamentals Certified</strong></td><td>ScrumStudy</td><td>08/04/2024</td></tr>
                         <tr><td><strong>PCAP: Programming Essentials in Python</strong></td><td>Cisco Networking Academy</td><td>24/04/2024</td></tr>
@@ -122,7 +140,7 @@
 
         <!-- VISTA 2: PROYECTOS PERSONALES -->
         <div id="projects-view" class="view-section">
-            <section class="card">
+            <section class="card admin-only">
                 <h2>Subir Proyectos Personales</h2>
                 <form id="project-form">
                     <div class="form-group"><label>Título</label><input type="text" id="proj-title" required></div>
@@ -140,11 +158,15 @@
 
         <!-- VISTA 3: HOBBIES -->
         <div id="hobbies-view" class="view-section">
-            <section class="card">
+            <section class="card admin-only" id="section-hobbies">
                 <h2>Gestionar Hobbies, Juegos y Deportes</h2>
                 <form id="hobby-form">
                     <div class="form-group"><label>Categoría</label>
-                        <select id="hobby-category"><option value="Hobbies">Hobbies</option><option value="Juegos">Juegos</option><option value="Deportes">Deportes</option></select>
+                        <select id="hobby-category">
+                            <option value="Hobbies">Hobbies</option>
+                            <option value="Juegos">Juegos</option>
+                            <option value="Deportes">Deportes</option>
+                        </select>
                     </div>
                     <div class="form-group"><label>Título</label><input type="text" id="hobby-title" required></div>
                     <div class="form-group"><label>Multimedia</label><input type="file" id="hobby-media" accept="image/*,video/*" required style="padding: 8px;"></div>
@@ -217,9 +239,11 @@
         </div>
     </main>
 </div>
-    <button id="adminToggleBtn" class="admin-toggle-btn" onclick="toggleAdminMode()">
-        🔒 Modo Admin
-    </button>
+
+<button id="adminToggleBtn" class="admin-toggle-btn" onclick="toggleAdminMode()">
+    🔒 Modo Admin
+</button>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="script.js"></script>
