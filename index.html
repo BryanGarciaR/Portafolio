@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bryan Alonso Garcia Romero | Portafolio Técnico</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <!-- Botón de Modo Administrador -->
-    <button id="admin-trigger-btn" onclick="verificarAdmin()" title="Modo Administrador" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #0f172a; color: #38bdf8; border: 2px solid #38bdf8; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+    <link rel="stylesheet" href="style.css">     
+    <!-- Botón de Modo Administrador en la esquina inferior derecha -->
+    <button id="admin-trigger-btn" onclick="verificarAdmin()" title="Modo Administrador" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #0f172a; color: var(--accent, #38bdf8); border: 2px solid var(--accent, #38bdf8); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
         <i class="fa-solid fa-lock" id="admin-lock-icon"></i>
     </button>
 </head>
@@ -48,7 +48,7 @@
 
     <!-- CONTENIDO PRINCIPAL -->
     <main id="main-content">
-        <!-- VISTA 1: PORTAFOLIO -->
+        <!-- VISTA 1: PORTAFOLIO PRINCIPAL -->
         <div id="portfolio-view" class="view-section active">
             <section class="card" id="section-profile">
                 <h2>Perfil Profesional <button class="edit-btn" onclick="toggleEdit('profile')">✏️ Modificar</button></h2>
@@ -61,36 +61,106 @@
                     <button class="cancel-btn" onclick="toggleEdit('profile')">Cancelar</button>
                 </div>
             </section>
-        </div>
 
-        <!-- VISTA 2: PROYECTOS -->
-        <div id="projects-view" class="view-section">
-            <section class="card">
-                <h2>Proyectos Personales</h2>
-                <p class="p-text">Sección destinada a mostrar tus herramientas y scripts de depuración.</p>
+            <section class="card" id="section-skills">
+                <h2>Habilidades Técnicas <button class="edit-btn" onclick="toggleEdit('skills')">✏️ Modificar</button></h2>
+                <div class="skills-grid" id="disp-skills">
+                    <div class="skill-box">
+                        <h3>Infraestructura & Redes</h3>
+                        <ul>
+                            <li>Configuración de Redes</li>
+                            <li>Soporte Técnico IT</li>
+                            <li>Optimización de Sistemas</li>
+                        </ul>
+                    </div>
+                    <div class="skill-box">
+                        <h3>Desarrollo & Debugging</h3>
+                        <ul>
+                            <li>Scripts Cliente-Servidor</li>
+                            <li>Depuración de Código</li>
+                            <li>Automatización</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="edit-box-skills" class="inline-edit-box">
+                    <div class="form-group"><textarea id="input-skills" style="height: 120px;"></textarea></div>
+                    <button class="submit-btn" onclick="saveEdit('skills')">Guardar Cambios</button>
+                    <button class="cancel-btn" onclick="toggleEdit('skills')">Cancelar</button>
+                </div>
             </section>
         </div>
 
-        <!-- VISTA 3: HOBBIES -->
-        <div id="hobbies-view" class="view-section">
+        <!-- VISTA 2: PROYECTOS PERSONALES -->
+        <div id="projects-view" class="view-section">
             <section class="card">
-                <h2>Hobbies, Juegos & Deportes</h2>
-                <div class="carousel-wrapper">
-                    <div class="carousel">
-                        <div class="carousel-item">
-                            <h3>Pump It Up / ITGMania</h3>
-                            <p class="p-text">Gestión de torneos y configuración de gráficos.</p>
+                <h2>Proyectos Personales & Herramientas</h2>
+                <p class="p-text">Desarrollos orientados a la automatización de procesos, scripts de depuración y gestión de plataformas tecnológicas.</p>
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-img-container">
+                            <i class="fa-solid fa-network-wired" style="font-size: 2.5rem; color: var(--accent);"></i>
+                        </div>
+                        <div class="project-content">
+                            <h3>Debugging Cliente-Servidor</h3>
+                            <p>Scripts personalizados para el monitoreo y solución de problemas de conectividad en red.</p>
+                        </div>
+                    </div>
+                    <div class="project-card">
+                        <div class="project-img-container">
+                            <i class="fa-solid fa-code" style="font-size: 2.5rem; color: var(--accent);"></i>
+                        </div>
+                        <div class="project-content">
+                            <h3>Automatización de Torneos</h3>
+                            <p>Generación dinámica de brackets y gestión de standings para eventos competitivos.</p>
                         </div>
                     </div>
                 </div>
             </section>
         </div>
 
-        <!-- VISTA 4: CONTACTO -->
+        <!-- VISTA 3: HOBBIES, JUEGOS Y DEPORTES -->
+        <div id="hobbies-view" class="view-section">
+            <section class="card">
+                <h2>Hobbies, Juegos & Deportes</h2>
+                <p class="p-text">Organización y participación activa en la comunidad de juegos de ritmo.</p>
+                <div class="carousel-wrapper">
+                    <div class="carousel">
+                        <div class="carousel-item">
+                            <h3>Pump It Up / ITGMania</h3>
+                            <p class="p-text">Configuración avanzada de software, optimización de gráficos y gestión técnica para eventos.</p>
+                        </div>
+                        <div class="carousel-item">
+                            <h3>PIU MOD PERÚ</h3>
+                            <p class="p-text">Orquestación de rondas eliminatorias online y actualización de tablas de clasificación.</p>
+                        </div>
+                        <div class="carousel-item">
+                            <h3>MOD International FEST</h3>
+                            <p class="p-text">Soporte técnico y despliegue de dinámicas para fases presenciales y online.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- VISTA 4: SERVICIOS Y CONTACTO -->
         <div id="contact-view" class="view-section">
             <section class="card">
-                <h2>Servicios - Contacto</h2>
-                <p class="p-text">Información de contacto profesional.</p>
+                <h2>Servicios & Contacto</h2>
+                <p class="p-text">Canales de comunicación directa para consultoría, soporte técnico y proyectos.</p>
+                <div class="contact-grid">
+                    <div class="contact-item">
+                        <h3><i class="fa-solid fa-envelope"></i> Correo</h3>
+                        <a href="mailto:contacto@bryangarcia.dev">Enviar mensaje</a>
+                    </div>
+                    <div class="contact-item">
+                        <h3><i class="fa-brands fa-github"></i> GitHub</h3>
+                        <a href="https://github.com" target="_blank">Ver perfiles</a>
+                    </div>
+                    <div class="contact-item">
+                        <h3><i class="fa-brands fa-linkedin"></i> LinkedIn</h3>
+                        <a href="https://linkedin.com" target="_blank">Conectar</a>
+                    </div>
+                </div>
             </section>
         </div>
     </main>
