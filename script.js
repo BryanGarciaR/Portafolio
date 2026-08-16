@@ -203,7 +203,6 @@ function cargarDatosRemotos() {
     db.collection('portfolio').doc('config').get().then((doc) => {
         if (doc.exists) {
             const data = doc.data();
-            
             if (data.avatar) aplicarImagenAvatar(data.avatar);
             if (data.profile) {
                 const el = document.getElementById('disp-profile');
@@ -257,7 +256,7 @@ function cargarDatosRemotos() {
             }
         }
     }).catch((error) => {
-        console.error("Error al cargar configuración:", error);
+        console.warn("Aviso: No se pudo conectar a Firestore, operando con valores locales por defecto.", error);
     });
 }
 
