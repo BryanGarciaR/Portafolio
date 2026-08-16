@@ -148,15 +148,13 @@ aside {
     position: relative;
     width: 100px;
     height: 100px;
-    margin: 0 auto 35px;
+    margin: 0 auto 35px !important;
     cursor: pointer;
-    border-radius: 50%;
-    overflow: hidden; /* <--- OBLIGA a que NADA se salga del círculo */
 }
 .avatar-placeholder, .avatar-img {
     display: block;
-    width: 100%;
-    height: 100%;
+    width: 100px !important;
+    height: 100px !important;
     border-radius: 50%;
     object-fit: cover;
 }
@@ -172,8 +170,8 @@ aside {
 }
 .avatar-overlay {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
+    bottom: 0px;
+    right: 0px;
     background: var(--accent);
     color: #0f172a;
     width: 28px;
@@ -184,12 +182,12 @@ aside {
     justify-content: center;
     font-size: 0.8rem;
     border: 2px solid var(--bg-card);
-    z-index: 10;
+    z-index: 5;
 }
 aside h1 {
     display: block;
     font-size: 1.4rem;
-    margin-top: 0;
+    margin-top: 20px !important;
     margin-bottom: 5px;
     color: #fff;
     clear: both;
