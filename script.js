@@ -60,15 +60,13 @@ function aplicarModoAdminVisual() {
         lockIcon.className = isAdmin ? "fa-solid fa-unlock" : "fa-solid fa-lock";
     }
 
-    // 2. CONTROL DEL AVATAR (Aquí está la solución)
-    const avatarBtn = document.getElementById('admin-avatar-btn');
-    if (avatarBtn) {
-        // Si no es admin, ocultamos el contenedor (display: none)
-        // Si es admin, lo mostramos (display: flex o el que corresponda)
-        avatarBtn.style.display = isAdmin ? 'flex' : 'none';
+    // 2. SOLO OCULTAR/MOSTRAR LA CÁMARA (El avatar principal se queda visible)
+    const avatarOverlay = document.querySelector('.avatar-overlay');
+    if (avatarOverlay) {
+        avatarOverlay.style.display = isAdmin ? 'flex' : 'none';
     }
 
-    // 3. Control de botones de modificar
+    // 3. Control de botones de modificar en las secciones
     const editBtns = document.querySelectorAll('.edit-btn');
     editBtns.forEach(btn => {
         btn.style.display = isAdmin ? 'inline-block' : 'none';
