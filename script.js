@@ -234,6 +234,30 @@ function cargarDatosRemotos() {
                 if (inputProfile) inputProfile.value = data.profile;
             }
 
+            // Competencias Técnicas (Skills)
+            if (data.skills) {
+                // Si 'skills' es un objeto con las tarjetas
+                if (typeof data.skills === 'object') {
+                    if (data.skills.dev && document.getElementById('disp-skills-dev')) {
+                        document.getElementById('disp-skills-dev').innerHTML = data.skills.dev;
+                        document.getElementById('input-skills-dev').value = data.skills.dev;
+                    }
+                    if (data.skills.infra && document.getElementById('disp-skills-infra')) {
+                        document.getElementById('disp-skills-infra').innerHTML = data.skills.infra;
+                        document.getElementById('input-skills-infra').value = data.skills.infra;
+                    }
+                    if (data.skills.mgmt && document.getElementById('disp-skills-mgmt')) {
+                        document.getElementById('disp-skills-mgmt').innerHTML = data.skills.mgmt;
+                        document.getElementById('input-skills-mgmt').value = data.skills.mgmt;
+                    }
+                } 
+                // Si lo guardaste como un string simple en un solo textarea
+                else if (typeof data.skills === 'string') {
+                    const inputSkills = document.getElementById('input-skills');
+                    if (inputSkills) inputSkills.value = data.skills;
+                }
+            }
+
             // Eventos / Intro
             if (data.events) {
                 const el = document.getElementById('disp-events-intro');
@@ -251,7 +275,6 @@ function cargarDatosRemotos() {
                         tbody.innerHTML += `<tr><td><strong>${cert.curso}</strong></td><td>${cert.institucion}</td><td>${cert.fecha}</td></tr>`;
                     });
                 }
-                // Texto plano para el textarea de edición
                 const inputCerts = document.getElementById('input-certs');
                 if (inputCerts) {
                     inputCerts.value = data.certs.map(c => `${c.curso} | ${c.institucion} | ${c.fecha}`).join('\n');
@@ -291,25 +314,40 @@ function cargarDatosRemotos() {
             }
         }
     }).catch((error) => {
-        console.warn("Aviso: No se pudo conectar a Firestore, operando con valores por defecto locales.", error);
+        console.warn("Aviso: No se pudo conectar a Firestore.", error);
     });
 }
+
 // ==========================================
 // 2. GUARDAR CAMBIOS DE EDICIÓN (SAVE EDIT)
 // ==========================================
 function saveEdit(section) {
+    if (!isAdmin) return;
+
     let payload = {};
 
     if (section === 'profile') {
         const val = document.getElementById('input-profile').value;
         payload = { profile: val };
     } 
+    else if (section === 'skills') {
+        const devVal = document.getElementById('input-skills-dev') ? document.getElementById('input-skills-dev').value : '';
+        const infraVal = document.getElementById('input-skills-infra') ? document.getElementById('input-skills-infra').value : '';
+        const mgmtVal = document.getElementById('input-skills-mgmt') ? document.getElementById('input-skills-mgmt').value : '';
+        
+        payload = { 
+            skills: {
+                dev: devVal,
+                infra: infraVal,
+                mgmt: mgmtVal
+            }
+        };
+    }
     else if (section === 'events') {
         const val = document.getElementById('input-events').value;
         payload = { events: val };
     }
     else if (section === 'certs') {
-        // Convierte las líneas del textarea en un arreglo de objetos JSON estructurados para la tabla
         const rawText = document.getElementById('input-certs').value;
         const lines = rawText.split('\n');
         const certsArray = lines.map(line => {
@@ -342,12 +380,23 @@ function saveEdit(section) {
         };
     }
 
-    // Enviar a Firestore utilizando merge para no sobrescribir los demás campos
     db.collection('portfolio').doc('config').set(payload, { merge: true })
       .then(() => {
           alert("¡Cambios guardados correctamente en la base de datos!");
           toggleEdit(section);
-          cargarDatosRemotos(); // Refrescar vista
+          cargarDatosRemotos();
+      })
+      .catch((error) => {
+          console.error("Error al guardar en Firestore: ", error);
+          alert("Hubo un error al guardar los cambios.");
+      });
+}
+
+    db.collection('portfolio').doc('config').set(payload, { merge: true })
+      .then(() => {
+          alert("¡Cambios guardados correctamente en la base de datos!");
+          toggleEdit(section);
+          cargarDatosRemotos();
       })
       .catch((error) => {
           console.error("Error al guardar en Firestore: ", error);
