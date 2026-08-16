@@ -148,7 +148,7 @@ aside {
     position: relative;
     width: 100px;
     height: 100px;
-    margin: 0 auto 50px !important;
+    margin: 0 auto 25px; 
     cursor: pointer;
 }
 .avatar-placeholder, .avatar-img {
@@ -170,8 +170,8 @@ aside {
 
 .avatar-overlay {
     position: absolute;
-    bottom: 8px; 
-    right: 8px;  
+    bottom: 0px;
+    right: 0px;
     background: var(--accent);
     color: #0f172a;
     width: 28px;
@@ -186,10 +186,9 @@ aside {
 aside h1 {
     display: block;
     font-size: 1.4rem;
-    margin-top: 35px !important; 
+    margin-top: 0; 
     margin-bottom: 5px;
     color: #fff;
-    clear: both;
 }
 aside p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
 
