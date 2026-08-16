@@ -52,10 +52,28 @@ function verificarAdmin() {
 }
 
 function aplicarModoAdminVisual() {
+    // 1. Cambiar icono del botón flotante inferior derecho
+    const lockIcon = document.getElementById('admin-lock-icon');
+    if (lockIcon) {
+        lockIcon.className = isAdmin ? "fa-solid fa-unlock" : "fa-solid fa-lock";
+    }
+
+    // 2. Mostrar u ocultar botones de modificar en las secciones
     const editBtns = document.querySelectorAll('.edit-btn');
     editBtns.forEach(btn => {
         btn.style.display = isAdmin ? 'inline-block' : 'none';
     });
+
+    // 3. Mostrar u ocultar formularios de subida (Proyectos y Hobbies)
+    const projectForm = document.getElementById('project-form');
+    if (projectForm) {
+        projectForm.parentElement.style.display = isAdmin ? 'block' : 'none';
+    }
+
+    const hobbyForm = document.getElementById('hobby-form');
+    if (hobbyForm) {
+        hobbyForm.parentElement.style.display = isAdmin ? 'block' : 'none';
+    }
 }
 
 /* ==========================================================
