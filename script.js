@@ -135,6 +135,9 @@ function aplicarImagenAvatar(src) {
 /* ==========================================================
    EDICIÓN RÁPIDA DE SECCIONES (Modo Admin)
    ========================================================== */
+// ==========================================
+// EDICIÓN RÁPIDA DE SECCIONES (Modo Admin)
+// ==========================================
 function toggleEdit(sectionKey) {
     if (!isAdmin) {
         verificarAdmin();
@@ -144,7 +147,6 @@ function toggleEdit(sectionKey) {
     const editBox = document.getElementById(`edit-box-${sectionKey}`);
     if (!editBox) return;
 
-    // Alternar clase .active que controla el CSS (.inline-edit-box.active { display: block; })
     editBox.classList.toggle('active');
 
     // Precargar datos actuales si se abre el cuadro
@@ -158,6 +160,7 @@ function toggleEdit(sectionKey) {
             const input = document.getElementById('input-events');
             if (disp && input) input.value = disp.innerText.trim();
         }
+        // Nota: 'skills' y 'certs' se cargan automáticamente desde cargarDatosRemotos()
     }
 }
 
@@ -174,16 +177,34 @@ async function saveEdit(sectionKey) {
         } else if (sectionKey === 'events') {
             payload.events = document.getElementById('input-events').value;
         } else if (sectionKey === 'certs') {
-            payload.certs = document.getElementById('input-certs').value;
+            // Convierte las líneas del textarea en un arreglo estructurado para la tabla
+            const rawText = document.getElementById('input-certs').value;
+            const lines = rawText.split('\n');
+            const certsArray = lines.map(line => {
+                const parts = line.split('|').map(p => p.trim());
+                return {
+                    curso: parts[0] || "",
+                    institucion: parts[1] || "",
+                    fecha: parts[2] || ""
+                };
+            }).filter(c => c.curso !== "");
+            
+            payload.certs = certsArray;
         } else if (sectionKey === 'contact') {
-            payload.srv1Title = document.getElementById('input-srv1-title').value;
-            payload.srv1Desc = document.getElementById('input-srv1-desc').value;
-            payload.srv2Title = document.getElementById('input-srv2-title').value;
-            payload.srv2Desc = document.getElementById('input-srv2-desc').value;
-            payload.phone = document.getElementById('input-phone').value;
-            payload.wsp = document.getElementById('input-wsp').value;
-            payload.fb = document.getElementById('input-fb').value;
-            payload.tk = document.getElementById('input-tk').value;
+            payload.contact = {
+                srv1: {
+                    title: document.getElementById('input-srv1-title').value,
+                    desc: document.getElementById('input-srv1-desc').value
+                },
+                srv2: {
+                    title: document.getElementById('input-srv2-title').value,
+                    desc: document.getElementById('input-srv2-desc').value
+                },
+                phone: document.getElementById('input-phone').value,
+                wsp: document.getElementById('input-wsp').value,
+                fb: document.getElementById('input-fb').value,
+                tk: document.getElementById('input-tk').value
+            };
         }
 
         await db.collection('portfolio').doc('config').set(payload, { merge: true });
@@ -196,68 +217,142 @@ async function saveEdit(sectionKey) {
     }
 }
 
-/* ==========================================================
-   CARGA DE CONFIGURACIÓN GLOBAL DESDE FIREBASE
-   ========================================================== */
+// ==========================================
+// 1. CARGAR DATOS REMOTOS DESDE FIRESTORE
+// ==========================================
 function cargarDatosRemotos() {
     db.collection('portfolio').doc('config').get().then((doc) => {
         if (doc.exists) {
             const data = doc.data();
-            if (data.avatar) aplicarImagenAvatar(data.avatar);
+
+            // Avatar y Perfil
+            if (data.avatar && typeof aplicarImagenAvatar === 'function') aplicarImagenAvatar(data.avatar);
             if (data.profile) {
                 const el = document.getElementById('disp-profile');
                 if (el) el.innerText = data.profile;
-            }
-            if (data.events) {
-                const el = document.getElementById('disp-events-intro');
-                if (el) el.innerText = data.events;
-            }
-            if (data.skills) {
-                const el = document.getElementById('input-skills');
-                if (el) el.value = data.skills;
-            }
-            if (data.certs) {
-                const el = document.getElementById('input-certs');
-                if (el) el.value = data.certs;
+                const inputProfile = document.getElementById('input-profile');
+                if (inputProfile) inputProfile.value = data.profile;
             }
 
-            // Datos de contacto y servicios
-            if (data.srv1Title) {
-                document.getElementById('disp-srv1-title').innerHTML = `<i class="fa-solid fa-screwdriver-wrench"></i> ${data.srv1Title}`;
-                document.getElementById('input-srv1-title').value = data.srv1Title;
+            // Eventos / Intro
+            if (data.events) {
+                const el = document.getElementById('disp-events-intro');
+                if (el) el.innerHTML = data.events;
+                const inputEvents = document.getElementById('input-events');
+                if (inputEvents) inputEvents.value = data.events;
             }
-            if (data.srv1Desc) {
-                document.getElementById('disp-srv1-desc').innerText = data.srv1Desc;
-                document.getElementById('input-srv1-desc').value = data.srv1Desc;
+
+            // Certificaciones (Renderizado dinámico de la tabla)
+            if (data.certs && Array.isArray(data.certs)) {
+                const tbody = document.getElementById('disp-certs');
+                if (tbody) {
+                    tbody.innerHTML = "";
+                    data.certs.forEach(cert => {
+                        tbody.innerHTML += `<tr><td><strong>${cert.curso}</strong></td><td>${cert.institucion}</td><td>${cert.fecha}</td></tr>`;
+                    });
+                }
+                // Texto plano para el textarea de edición
+                const inputCerts = document.getElementById('input-certs');
+                if (inputCerts) {
+                    inputCerts.value = data.certs.map(c => `${c.curso} | ${c.institucion} | ${c.fecha}`).join('\n');
+                }
             }
-            if (data.srv2Title) {
-                document.getElementById('disp-srv2-title').innerHTML = `<i class="fa-solid fa-microchip"></i> ${data.srv2Title}`;
-                document.getElementById('input-srv2-title').value = data.srv2Title;
-            }
-            if (data.srv2Desc) {
-                document.getElementById('disp-srv2-desc').innerText = data.srv2Desc;
-                document.getElementById('input-srv2-desc').value = data.srv2Desc;
-            }
-            if (data.phone) {
-                document.getElementById('disp-phone').innerText = data.phone;
-                document.getElementById('input-phone').value = data.phone;
-            }
-            if (data.wsp) {
-                document.getElementById('disp-wsp-link').href = data.wsp;
-                document.getElementById('input-wsp').value = data.wsp;
-            }
-            if (data.fb) {
-                document.getElementById('disp-fb-link').href = data.fb;
-                document.getElementById('input-fb').value = data.fb;
-            }
-            if (data.tk) {
-                document.getElementById('disp-tk-link').href = data.tk;
-                document.getElementById('input-tk').value = data.tk;
+
+            // Contacto y Redes Sociales
+            if (data.contact) {
+                if (data.contact.srv1) {
+                    document.getElementById('disp-srv1-title').innerHTML = `<i class="fa-solid fa-screwdriver-wrench"></i> ${data.contact.srv1.title}`;
+                    document.getElementById('disp-srv1-desc').innerText = data.contact.srv1.desc;
+                    document.getElementById('input-srv1-title').value = data.contact.srv1.title;
+                    document.getElementById('input-srv1-desc').value = data.contact.srv1.desc;
+                }
+                if (data.contact.srv2) {
+                    document.getElementById('disp-srv2-title').innerHTML = `<i class="fa-solid fa-microchip"></i> ${data.contact.srv2.title}`;
+                    document.getElementById('disp-srv2-desc').innerText = data.contact.srv2.desc;
+                    document.getElementById('input-srv2-title').value = data.contact.srv2.title;
+                    document.getElementById('input-srv2-desc').value = data.contact.srv2.desc;
+                }
+                if (data.contact.phone) {
+                    document.getElementById('disp-phone').innerText = data.contact.phone;
+                    document.getElementById('input-phone').value = data.contact.phone;
+                }
+                if (data.contact.wsp) {
+                    document.getElementById('disp-wsp-link').href = data.contact.wsp;
+                    document.getElementById('input-wsp').value = data.contact.wsp;
+                }
+                if (data.contact.fb) {
+                    document.getElementById('disp-fb-link').href = data.contact.fb;
+                    document.getElementById('input-fb').value = data.contact.fb;
+                }
+                if (data.contact.tk) {
+                    document.getElementById('disp-tk-link').href = data.contact.tk;
+                    document.getElementById('input-tk').value = data.contact.tk;
+                }
             }
         }
     }).catch((error) => {
-        console.warn("Aviso: No se pudo conectar a Firestore, operando con valores locales por defecto.", error);
+        console.warn("Aviso: No se pudo conectar a Firestore, operando con valores por defecto locales.", error);
     });
+}
+// ==========================================
+// 2. GUARDAR CAMBIOS DE EDICIÓN (SAVE EDIT)
+// ==========================================
+function saveEdit(section) {
+    let payload = {};
+
+    if (section === 'profile') {
+        const val = document.getElementById('input-profile').value;
+        payload = { profile: val };
+    } 
+    else if (section === 'events') {
+        const val = document.getElementById('input-events').value;
+        payload = { events: val };
+    }
+    else if (section === 'certs') {
+        // Convierte las líneas del textarea en un arreglo de objetos JSON estructurados para la tabla
+        const rawText = document.getElementById('input-certs').value;
+        const lines = rawText.split('\n');
+        const certsArray = lines.map(line => {
+            const parts = line.split('|').map(p => p.trim());
+            return {
+                curso: parts[0] || "",
+                institucion: parts[1] || "",
+                fecha: parts[2] || ""
+            };
+        }).filter(c => c.curso !== "");
+        
+        payload = { certs: certsArray };
+    }
+    else if (section === 'contact') {
+        payload = {
+            contact: {
+                srv1: {
+                    title: document.getElementById('input-srv1-title').value,
+                    desc: document.getElementById('input-srv1-desc').value
+                },
+                srv2: {
+                    title: document.getElementById('input-srv2-title').value,
+                    desc: document.getElementById('input-srv2-desc').value
+                },
+                phone: document.getElementById('input-phone').value,
+                wsp: document.getElementById('input-wsp').value,
+                fb: document.getElementById('input-fb').value,
+                tk: document.getElementById('input-tk').value
+            }
+        };
+    }
+
+    // Enviar a Firestore utilizando merge para no sobrescribir los demás campos
+    db.collection('portfolio').doc('config').set(payload, { merge: true })
+      .then(() => {
+          alert("¡Cambios guardados correctamente en la base de datos!");
+          toggleEdit(section);
+          cargarDatosRemotos(); // Refrescar vista
+      })
+      .catch((error) => {
+          console.error("Error al guardar en Firestore: ", error);
+          alert("Hubo un error al guardar los cambios.");
+      });
 }
 
 /* ==========================================================
