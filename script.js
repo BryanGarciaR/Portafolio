@@ -407,22 +407,39 @@ function cargarDatosRemotos() {
             if (data.skills && typeof data.skills === 'object') {
                 if (document.getElementById('input-skills-dev')) document.getElementById('input-skills-dev').value = data.skills.dev || '';
                 if (document.getElementById('input-skills-infra')) document.getElementById('input-skills-infra').value = data.skills.infra || '';
-                if (document.getElementById('input-skills-mgmt')) document.getElementById('input-skills-mgmt').value = data.skills.mgmt || '';
+                
+                // Formatear la caja de texto editable para mostrar cada asterisco en una nueva línea
+                if (document.getElementById('input-skills-mgmt')) {
+                    const rawMgmt = data.skills.mgmt || '';
+                    document.getElementById('input-skills-mgmt').value = rawMgmt.replaceAll('*', '\n*').trim();
+                }
+
+                // Función auxiliar para convertir el texto con asteriscos en elementos de lista HTML <li>
+                const formatBullets = (text) => {
+                    if (!text) return '';
+                    if (!text.includes('*')) return text;
+                    return text
+                        .split('*')
+                        .map(item => item.trim())
+                        .filter(item => item.length > 0)
+                        .map(item => `<li>${item}</li>`)
+                        .join('');
+                };
 
                 const container = document.getElementById('disp-skills-container');
                 if (container) {
                     container.innerHTML = `
                         <div class="skill-box">
                             <h3>Desarrollo y Debugging</h3>
-                            <ul>${data.skills.dev || ''}</ul>
+                            <ul>${formatBullets(data.skills.dev || '')}</ul>
                         </div>
                         <div class="skill-box">
                             <h3>Infraestructura & Redes</h3>
-                            <ul>${data.skills.infra || ''}</ul>
+                            <ul>${formatBullets(data.skills.infra || '')}</ul>
                         </div>
                         <div class="skill-box">
                             <h3>Gestión y E-sports Tech</h3>
-                            <ul>${data.skills.mgmt || ''}</ul>
+                            <ul>${formatBullets(data.skills.mgmt || '')}</ul>
                         </div>
                     `;
                 }
