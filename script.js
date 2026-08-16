@@ -116,21 +116,29 @@ async function subirACloudinary(file) {
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_PRESET);
 
+    // 1. Detectar si es video o imagen
+    const isVideo = file.type.startsWith('video');
+    const resourceType = isVideo ? 'video' : 'image';
+    
+    // 2. URL dinámica de Cloudinary dependiendo del tipo de archivo
+    const uploadEndpoint = `https://api.cloudinary.com/v1_1/n4ni5wxl/${resourceType}/upload`;
+
     try {
-        const response = await fetch(CLOUDINARY_URL, {
+        const response = await fetch(uploadEndpoint, {
             method: 'POST',
             body: formData
         });
         const data = await response.json();
+        
         if (data.secure_url) {
             return data.secure_url;
         } else {
             console.error("Detalle Cloudinary:", data);
-            throw new Error('Error al subir el archivo a Cloudinary');
+            throw new Error(data.error?.message || 'Error desconocido de Cloudinary');
         }
     } catch (error) {
         console.error("Cloudinary Error:", error);
-        alert('Hubo un error al subir el archivo multimedia a Cloudinary.');
+        alert(`Hubo un error al subir el ${isVideo ? 'video' : 'archivo'}. Verifica tu conexión o el formato.`);
         return null;
     }
 }
@@ -505,14 +513,23 @@ function cargarHobbiesFirestore() {
         querySnapshot.forEach((doc) => {
             const h = doc.data();
             const id = doc.id;
+            
+            // 1. Evitar el feo "undefined" si falta la categoría
+            const categoryText = h.category ? h.category : 'Hobby';
+            
+            // 2. Comprobación inteligente de video (por tipo guardado o si el link es .mp4/.webm)
+            const isVideo = h.type === 'video' || (h.media && h.media.match(/\.(mp4|webm|ogg|mov)$/i));
+
             container.innerHTML += `
                 <div class="carousel-item">
-                    <span style="font-size: 0.75rem; background: var(--accent); color: #0f172a; padding: 2px 6px; border-radius: 4px; font-weight: bold; display:inline-block; margin-bottom:5px;">${h.category}</span>
+                    <span style="font-size: 0.75rem; background: var(--accent); color: #0f172a; padding: 2px 6px; border-radius: 4px; font-weight: bold; display:inline-block; margin-bottom:5px;">${categoryText}</span>
                     <h3 style="margin: 0.5rem 0; color: #fff; font-size: 1rem;">${h.title}</h3>
-                    ${h.media ? (h.type === 'video' ? 
-                        `<video src="${h.media}" controls style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:8px;"></video>` : 
-                        `<img src="${h.media}" alt="${h.title}" style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:8px;">`
+                    
+                    ${h.media ? (isVideo ? 
+                        `<video src="${h.media}" controls style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px; background:#000;"></video>` : 
+                        `<img src="${h.media}" alt="${h.title}" style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px;">`
                     ) : ''}
+                    
                     <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">${h.desc}</p>
                     ${isAdmin ? `<button onclick="deleteHobby('${id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 0.8rem; width:100%;">Eliminar</button>` : ''}
                 </div>
@@ -520,7 +537,6 @@ function cargarHobbiesFirestore() {
         });
     });
 }
-
 function deleteHobby(id) {
     if (!isAdmin) return;
     if (confirm('¿Estás seguro de eliminar este elemento?')) {
