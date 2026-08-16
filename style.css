@@ -66,8 +66,18 @@ th { color: var(--accent); font-weight: 600; }
 .project-card h3 { color: var(--accent); margin-bottom: 8px; font-size: 1.1rem; }
 .project-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px; }
 
-.carousel-wrapper { width: 100%; overflow-x: auto; padding-bottom: 15px; margin-top: 15px; }
-.carousel { display: flex; gap: 20px; width: max-content; }
+.carousel-wrapper {
+    width: 100%;
+    overflow: visible; /* Elimina cualquier barra de desplazamiento heredada */
+}
+.carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* Se acomoda solo según el ancho de la pantalla */
+    gap: 20px; /* Espacio ordenado entre las tarjetas para que no se amontonen */
+    width: 100%;
+    overflow-x: hidden; /* Oculta la barra horizontal definitivamente */
+    padding-bottom: 10px;
+}
 .carousel-item { width: 280px; min-width: 280px; background: rgba(15, 23, 42, 0.7); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
 
 .services-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
