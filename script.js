@@ -16,74 +16,72 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// URL de Cloudinary
+// Credenciales Cloudinary & Admin
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4ni5wxl/upload";
 const CLOUDINARY_PRESET = "portafolio_preset";
+const ADMIN_PASSWORD = "bryan2026";
 
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
 
+/* ==========================================================
+   INICIALIZACIÓN DE LA PÁGINA
+   ========================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-    aplicarModoAdminVisual();
+    syncAdminState(isAdmin);
     cargarDatosRemotos();
     cargarProyectosFirestore();
     cargarHobbiesFirestore();
 });
 
 /* ==========================================================
-   AUTENTICACIÓN DE ADMINISTRADOR
+   GESTIÓN Y SINCRONIZACIÓN DEL MODO ADMINISTRADOR
    ========================================================== */
-function verificarAdmin() {
-    if (isAdmin) {
-        if (confirm('¿Deseas cerrar sesión de Administrador?')) {
-            sessionStorage.removeItem('portfolio_admin');
-            isAdmin = false;
-            location.reload();
-        }
-        return;
-    }
-    const pass = prompt('Ingrese la contraseña de Administrador:');
-    if (pass === 'bryan2026') {
-        sessionStorage.setItem('portfolio_admin', 'true');
-        isAdmin = true;
-        location.reload();
-    } else if (pass !== null) {
-        alert('Contraseña incorrecta.');
-    }
-}
+function syncAdminState(enabled) {
+    isAdmin = enabled;
+    sessionStorage.setItem('portfolio_admin', enabled ? 'true' : 'false');
 
-function aplicarModoAdminVisual() {
+    const toggleBtn = document.getElementById('adminToggleBtn');
+    if (enabled) {
+        document.body.classList.add('admin-mode');
+        if (toggleBtn) toggleBtn.innerHTML = "🔓 Salir Admin";
+    } else {
+        document.body.classList.remove('admin-mode');
+        if (toggleBtn) toggleBtn.innerHTML = "🔒 Modo Admin";
+    }
+
+    // Actualizar visibilidad de botones de edición
     const editBtns = document.querySelectorAll('.edit-btn');
     editBtns.forEach(btn => {
-        btn.style.display = isAdmin ? 'inline-block' : 'none';
+        btn.style.display = enabled ? 'inline-block' : 'none';
     });
 }
-const ADMIN_PASSWORD = "bryan2026"; 
 
 function toggleAdminMode() {
-    const isCurrentlyAdmin = document.body.classList.contains('admin-mode');
-    
-    if (isCurrentlyAdmin) {
-        // Si ya está activo, lo desactiva
-        document.body.classList.remove('admin-mode');
-        document.getElementById('adminToggleBtn').innerHTML = "🔒 Modo Admin";
-        alert("Se ha cerrado el modo administrador.");
+    if (isAdmin) {
+        if (confirm('¿Deseas cerrar la sesión de Administrador?')) {
+            syncAdminState(false);
+            alert("Se ha cerrado el modo administrador.");
+            cargarProyectosFirestore();
+            cargarHobbiesFirestore();
+        }
     } else {
-        // Si está desactivado, pide contraseña
-        let pass = prompt("Ingrese la contraseña de administrador:");
+        const pass = prompt("Ingrese la contraseña de administrador:");
         if (pass === ADMIN_PASSWORD) {
-            document.body.classList.add('admin-mode');
-            document.getElementById('adminToggleBtn').innerHTML = "🔓 Salir Admin";
+            syncAdminState(true);
             alert("¡Modo administrador activado con éxito!");
+            cargarProyectosFirestore();
+            cargarHobbiesFirestore();
         } else if (pass !== null) {
             alert("Contraseña incorrecta.");
         }
     }
 }
 
-// Asegurarse de que al cargar la página NUNCA inicie en modo admin
-document.addEventListener("DOMContentLoaded", () => {
-    document.body.classList.remove('admin-mode');
-});
+function verificarAdmin() {
+    if (!isAdmin) {
+        toggleAdminMode();
+    }
+}
 
 /* ==========================================================
    NAVEGACIÓN ENTRE VISTAS
@@ -115,7 +113,7 @@ async function subirACloudinary(file) {
             return data.secure_url;
         } else {
             console.error("Detalle Cloudinary:", data);
-            throw new Error('Error al subir la imagen a Cloudinary');
+            throw new Error('Error al subir el archivo a Cloudinary');
         }
     } catch (error) {
         console.error("Cloudinary Error:", error);
@@ -171,9 +169,10 @@ function toggleEdit(sectionKey) {
     const editBox = document.getElementById(`edit-box-${sectionKey}`);
     if (!editBox) return;
 
+    const isOpening = !editBox.classList.contains('active');
     editBox.classList.toggle('active');
 
-    if (editBox.classList.contains('active')) {
+    if (isOpening) {
         if (sectionKey === 'profile') {
             const disp = document.getElementById('disp-profile');
             const input = document.getElementById('input-profile');
@@ -266,7 +265,7 @@ function cargarDatosRemotos() {
             const data = doc.data();
 
             // Avatar y Perfil
-            if (data.avatar && typeof aplicarImagenAvatar === 'function') aplicarImagenAvatar(data.avatar);
+            if (data.avatar) aplicarImagenAvatar(data.avatar);
             if (data.profile) {
                 const el = document.getElementById('disp-profile');
                 if (el) el.innerText = data.profile;
@@ -274,34 +273,28 @@ function cargarDatosRemotos() {
                 if (inputProfile) inputProfile.value = data.profile;
             }
 
-            // Competencias Técnicas (Skills)
-            if (data.skills) {
-                if (typeof data.skills === 'object') {
-                    if (document.getElementById('input-skills-dev')) document.getElementById('input-skills-dev').value = data.skills.dev || '';
-                    if (document.getElementById('input-skills-infra')) document.getElementById('input-skills-infra').value = data.skills.infra || '';
-                    if (document.getElementById('input-skills-mgmt')) document.getElementById('input-skills-mgmt').value = data.skills.mgmt || '';
+            // Competencias Técnicas
+            if (data.skills && typeof data.skills === 'object') {
+                if (document.getElementById('input-skills-dev')) document.getElementById('input-skills-dev').value = data.skills.dev || '';
+                if (document.getElementById('input-skills-infra')) document.getElementById('input-skills-infra').value = data.skills.infra || '';
+                if (document.getElementById('input-skills-mgmt')) document.getElementById('input-skills-mgmt').value = data.skills.mgmt || '';
 
-                    const container = document.getElementById('disp-skills-container');
-                    if (container) {
-                        container.innerHTML = `
-                            <div class="skill-box">
-                                <h3>Desarrollo y Debugging</h3>
-                                <ul>${data.skills.dev || ''}</ul>
-                            </div>
-                            <div class="skill-box">
-                                <h3>Infraestructura & Redes</h3>
-                                <ul>${data.skills.infra || ''}</ul>
-                            </div>
-                            <div class="skill-box">
-                                <h3>Gestión y E-sports Tech</h3>
-                                <ul>${data.skills.mgmt || ''}</ul>
-                            </div>
-                        `;
-                    }
-                } 
-                else if (typeof data.skills === 'string') {
-                    const inputSkills = document.getElementById('input-skills');
-                    if (inputSkills) inputSkills.value = data.skills;
+                const container = document.getElementById('disp-skills-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="skill-box">
+                            <h3>Desarrollo y Debugging</h3>
+                            <ul>${data.skills.dev || ''}</ul>
+                        </div>
+                        <div class="skill-box">
+                            <h3>Infraestructura & Redes</h3>
+                            <ul>${data.skills.infra || ''}</ul>
+                        </div>
+                        <div class="skill-box">
+                            <h3>Gestión y E-sports Tech</h3>
+                            <ul>${data.skills.mgmt || ''}</ul>
+                        </div>
+                    `;
                 }
             }
 
