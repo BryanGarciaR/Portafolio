@@ -244,11 +244,11 @@ function deleteHobby(id) {
 
     
     const avatarContainer = document.querySelector('.avatar-container');
-    const avatarInput = document.getElementById('avatarInput'); // Asegúrate que tu input file tenga este ID
+    const avatarInput = document.getElementById('avatar-input'); 
 
     if (avatarContainer && avatarInput) {
         avatarContainer.addEventListener('click', () => {
-            // Si NO es admin, no hacemos absolutamente nada (se ignora el clic)
+            // Si NO es admin, no hacemos nada
             if (!isAdmin) {
                 return; 
             }
@@ -256,7 +256,7 @@ function deleteHobby(id) {
             avatarInput.click();
         });
     }
-};
+});
 /* ==========================================================
    GESTIÓN DE AVATAR
    ========================================================== */
