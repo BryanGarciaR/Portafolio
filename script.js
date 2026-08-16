@@ -1,23 +1,24 @@
 /* ==========================================================
    CONFIGURACIÓN DE FIREBASE Y CLOUDINARY
    ========================================================== */
-// Reemplaza con tus credenciales reales de Firebase
 const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_AUTH_DOMAIN",
+    apiKey: "AIzaSyDx_gaDRKRWcXbykR0w9K6T-XdvQ6mumIk",
+    authDomain: "bryangr-dev.firebaseapp.com",
     projectId: "BryanGR-dev", // Tu proyecto actual en Firebase
-    storageBucket: "TU_STORAGE_BUCKET",
-    messagingSenderId: "TU_MESSAGING_SENDER_ID",
-    appId: "TU_APP_ID"
+    storageBucket: "bryangr-dev.firebasestorage.app",
+    messagingSenderId: "505846189271",
+    appId: "505846189271:web:dafffb1c5d6a3b33a7b492"
 };
 
-// Inicializar Firebase (Requiere SDKs de Firebase en el HTML)
-firebase.initializeApp(firebaseConfig);
+// Inicializar Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore();
 
-// Configuración de Cloudinary
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/TU_CLOUD_NAME/upload"; // Reemplaza TU_CLOUD_NAME
-const CLOUDINARY_PRESET = "TU_UPLOAD_PRESET"; // Reemplaza con tu Upload Preset de Cloudinary
+// Configuración de Cloudinary (Reemplaza TU_CLOUD_NAME y tu Upload Preset configurado)
+const CLOUDINARY_URL=cloudinary://<your_api_key>:<your_api_secret>@n4ni5wxl
+const CLOUDINARY_PRESET = "portafolio_preset";
 
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
 
@@ -90,7 +91,7 @@ async function subirACloudinary(file) {
         }
     } catch (error) {
         console.error("Cloudinary Error:", error);
-        alert('Hubo un error al subir el archivo multimedia.');
+        alert('Hubo un error al subir el archivo multimedia a Cloudinary.');
         return null;
     }
 }
@@ -105,8 +106,12 @@ async function updateAvatar(event) {
         const url = await subirACloudinary(file);
         if (url) {
             aplicarImagenAvatar(url);
-            await db.collection('portfolio').doc('config').set({ avatar: url }, { merge: true });
-            alert('¡Avatar actualizado en la nube!');
+            try {
+                await db.collection('portfolio').doc('config').set({ avatar: url }, { merge: true });
+                alert('¡Avatar actualizado y guardado en Firebase!');
+            } catch (err) {
+                console.error("Error al guardar avatar en Firestore:", err);
+            }
         }
     }
 }
@@ -119,12 +124,23 @@ function aplicarImagenAvatar(src) {
 }
 
 /* ==========================================================
+   EDICIÓN RÁPIDA DE SECCIONES (Modo Admin)
+   ========================================================== */
+function toggleEdit(sectionKey) {
+    if (!isAdmin) {
+        verificarAdmin();
+        return;
+    }
+    alert(`Modo edición activado para la sección: ${sectionKey}.`);
+}
+
+/* ==========================================================
    PROYECTOS PERSONALES (Firestore + Cloudinary)
    ========================================================== */
 const projectForm = document.getElementById('project-form');
 if (projectForm) {
     projectForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+        e.preventDefault(); 
         if (!isAdmin) { alert('No tienes permisos de administrador'); return; }
 
         const title = document.getElementById('proj-title').value;
@@ -146,11 +162,12 @@ if (projectForm) {
                 img: imgUrl,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert('¡Proyecto guardado en Firebase!');
+            alert('¡Proyecto guardado con éxito en Firebase!');
             projectForm.reset();
             cargarProyectosFirestore();
         } catch (error) {
             console.error("Error al guardar proyecto:", error);
+            alert('Hubo un error al registrar el proyecto.');
         }
     });
 }
@@ -198,7 +215,7 @@ function deleteProject(id) {
 const hobbyForm = document.getElementById('hobby-form');
 if (hobbyForm) {
     hobbyForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+        e.preventDefault(); 
         if (!isAdmin) { alert('No tienes permisos de administrador'); return; }
 
         const category = document.getElementById('hobby-category').value;
@@ -225,11 +242,12 @@ if (hobbyForm) {
                 type,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert('¡Elemento guardado en Firebase!');
+            alert('¡Elemento guardado con éxito en Firebase!');
             hobbyForm.reset();
             cargarHobbiesFirestore();
         } catch (error) {
             console.error("Error al guardar hobby:", error);
+            alert('Hubo un error al registrar el hobby.');
         }
     });
 }
@@ -275,7 +293,7 @@ function deleteHobby(id) {
 }
 
 /* ==========================================================
-   CARGA DE CONFIGURACIÓN GLOBAL (Avatar y otros datos)
+   CARGA DE CONFIGURACIÓN GLOBAL (Avatar remoto)
    ========================================================== */
 function cargarDatosRemotos() {
     db.collection('portfolio').doc('config').get().then((doc) => {
