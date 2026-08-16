@@ -49,11 +49,24 @@ function syncAdminState(enabled) {
         if (toggleBtn) toggleBtn.innerHTML = "🔒 Modo Admin";
     }
 
-    // Actualizar visibilidad de botones de edición
+    // 1. Actualizar visibilidad de botones de edición (Lápiz)
     const editBtns = document.querySelectorAll('.edit-btn');
     editBtns.forEach(btn => {
         btn.style.display = enabled ? 'inline-block' : 'none';
     });
+
+    // 2. NUEVO: Ocultar/Mostrar el icono de la cámara en el avatar
+    const avatarOverlay = document.querySelector('.avatar-overlay');
+    const avatarContainer = document.querySelector('.avatar-container');
+    
+    if (avatarOverlay) {
+        avatarOverlay.style.display = enabled ? 'flex' : 'none';
+    }
+    
+    // Cambiar el cursor para que no parezca clickeable si no eres admin
+    if (avatarContainer) {
+        avatarContainer.style.cursor = enabled ? 'pointer' : 'default';
+    }
 }
 
 function toggleAdminMode() {
