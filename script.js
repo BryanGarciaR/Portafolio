@@ -87,15 +87,30 @@ function aplicarModoAdminVisual() {
 /* ==========================================================
    NAVEGACIÓN ENTRE VISTAS
    ========================================================== */
-function switchView(viewId, btn) {
-    document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+function switchView(viewId, buttonElement) {
+    // 1. Ocultar todas las secciones de vista
+    const sections = document.querySelectorAll('.view-section');
+    sections.forEach(section => {
+        section.classList.remove('active');
+    });
 
-    const targetView = document.getElementById(viewId);
-    if (targetView) targetView.classList.add('active');
-    if (btn) btn.classList.add('active');
+    // 2. Remover la clase activa de todos los botones del menú
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // 3. Mostrar la sección seleccionada
+    const targetSection = document.getElementById(viewId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+
+    // 4. Activar el botón presionado
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    }
 }
-
 /* ==========================================================
    SUBIR ARCHIVOS A CLOUDINARY
    ========================================================== */
