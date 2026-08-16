@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bryan Alonso Garcia Romero | Portafolio Técnico</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">    
-    <!-- Botón de Modo Administrador en la esquina inferior derecha -->
-    <button id="admin-trigger-btn" onclick="verificarAdmin()" title="Modo Administrador" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #0f172a; color: var(--accent, #38bdf8); border: 2px solid var(--accent, #38bdf8); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+    <link rel="stylesheet" href="style.css">
+    <!-- Botón de Modo Administrador -->
+    <button id="admin-trigger-btn" onclick="verificarAdmin()" title="Modo Administrador" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #0f172a; color: #38bdf8; border: 2px solid #38bdf8; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
         <i class="fa-solid fa-lock" id="admin-lock-icon"></i>
     </button>
 </head>
@@ -21,12 +21,10 @@
 <div class="wrapper">
     <!-- BARRA LATERAL -->
     <aside>
-        <!-- Estructura original restaurada para que el avatar siempre se vea -->
         <div class="avatar-container" onclick="document.getElementById('avatar-input').click()" title="Haz clic para cambiar tu foto de perfil">
             <div id="avatar-display-wrapper">
                 <div class="avatar-placeholder" id="avatar-initials">BG</div>
             </div>
-            <!-- Solo esta capa será afectada por el JS -->
             <div class="avatar-overlay"><i class="fa-solid fa-camera"></i></div>
         </div>
         <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="updateAvatar(event)">
@@ -48,9 +46,9 @@
         </div>
     </aside>
 
-    <!-- ... (El resto del main se mantiene igual) ... -->
+    <!-- CONTENIDO PRINCIPAL -->
     <main id="main-content">
-        <!-- VISTA 1: PORTAFOLIO PRINCIPAL -->
+        <!-- VISTA 1: PORTAFOLIO -->
         <div id="portfolio-view" class="view-section active">
             <section class="card" id="section-profile">
                 <h2>Perfil Profesional <button class="edit-btn" onclick="toggleEdit('profile')">✏️ Modificar</button></h2>
@@ -63,11 +61,41 @@
                     <button class="cancel-btn" onclick="toggleEdit('profile')">Cancelar</button>
                 </div>
             </section>
-            <!-- ... -->
         </div>
-        <!-- (Resto del contenido...) -->
+
+        <!-- VISTA 2: PROYECTOS -->
+        <div id="projects-view" class="view-section">
+            <section class="card">
+                <h2>Proyectos Personales</h2>
+                <p class="p-text">Sección destinada a mostrar tus herramientas y scripts de depuración.</p>
+            </section>
+        </div>
+
+        <!-- VISTA 3: HOBBIES -->
+        <div id="hobbies-view" class="view-section">
+            <section class="card">
+                <h2>Hobbies, Juegos & Deportes</h2>
+                <div class="carousel-wrapper">
+                    <div class="carousel">
+                        <div class="carousel-item">
+                            <h3>Pump It Up / ITGMania</h3>
+                            <p class="p-text">Gestión de torneos y configuración de gráficos.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- VISTA 4: CONTACTO -->
+        <div id="contact-view" class="view-section">
+            <section class="card">
+                <h2>Servicios - Contacto</h2>
+                <p class="p-text">Información de contacto profesional.</p>
+            </section>
+        </div>
     </main>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="script.js"></script>
