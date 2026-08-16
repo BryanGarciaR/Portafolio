@@ -145,16 +145,16 @@ aside {
 }
 
 .avatar-container {
-    position: relative; /* Mantén esto para que el ícono se posicione DENTRO */
+    position: relative;
     width: 100px;
     height: 100px;
-    margin: 0 auto 30px; /* <--- MODIFICA ESTO: 0 arriba, centrado horizontal, 30px abajo */
+    margin: 0 auto 40px !important; /* <--- Aumenta a 40px y pon !important */
     cursor: pointer;
-    /* Asegúrate de que no tenga top, left, right, o bottom aquí */
 }
 .avatar-placeholder, .avatar-img {
-    width: 100%;  /* Usa 100% en lugar de 100px */
-    height: 100%; /* Usa 100% en lugar de 100px */
+    display: block; /* <--- AGREGA ESTA LÍNEA */
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     object-fit: cover;
 }
@@ -178,7 +178,7 @@ aside {
 aside h1 {
     display: block;
     font-size: 1.4rem;
-    margin-top: 0; 
+    margin-top: 15px !important; /* <--- AGREGA ESTE MARGEN */
     margin-bottom: 5px;
     color: #fff;
 }
