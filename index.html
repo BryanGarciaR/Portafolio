@@ -6,10 +6,6 @@
     <title>Bryan Alonso Garcia Romero | Portafolio Técnico</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">     
-    <!-- Botón de Modo Administrador -->
-    <button id="admin-trigger-btn" onclick="verificarAdmin()" title="Modo Administrador" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #0f172a; color: var(--accent, #38bdf8); border: 2px solid var(--accent, #38bdf8); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
-        <i class="fa-solid fa-lock" id="admin-lock-icon"></i>
-    </button>
 </head>
 <body>
 
@@ -33,10 +29,10 @@
         <p>Asesor SAE & Desarrollador de Sistemas</p>
         
         <div class="nav-menu">
-            <button class="nav-btn active" onclick="switchView('portfolio-view', this)"><i class="fa-solid fa-chart-pie"></i> Portafolio Principal</button>
-            <button class="nav-btn" onclick="switchView('projects-view', this)"><i class="fa-solid fa-rocket"></i> Proyectos Personales</button>
-            <button class="nav-btn" onclick="switchView('hobbies-view', this)"><i class="fa-solid fa-gamepad"></i> Hobbies, Juegos & Deportes</button>
-            <button class="nav-btn" onclick="switchView('contact-view', this)"><i class="fa-solid fa-phone"></i> Servicios - Contacto</button>
+            <a href="#section-profile" class="nav-btn active"><i class="fa-solid fa-chart-pie"></i> Portafolio Principal</a>
+            <a href="#section-projects" class="nav-btn"><i class="fa-solid fa-rocket"></i> Proyectos Personales</a>
+            <a href="#section-hobbies" class="nav-btn"><i class="fa-solid fa-gamepad"></i> Hobbies, Juegos & Deportes</a>
+            <a href="#section-contact" class="nav-btn"><i class="fa-solid fa-phone"></i> Servicios - Contacto</a>
         </div>
 
         <div class="contact-info">
@@ -48,102 +44,96 @@
 
     <!-- CONTENIDO PRINCIPAL -->
     <main id="main-content">
-        <!-- VISTA 1: PORTAFOLIO PRINCIPAL -->
-        <div id="portfolio-view" class="view-section active">
-            <section class="card" id="section-profile">
-                <h2>Perfil Profesional <button class="edit-btn" onclick="toggleEdit('profile')">✏️ Modificar</button></h2>
-                <p id="disp-profile" class="p-text">
-                    Profesional especializado en tecnologías de la información, infraestructura de redes y desarrollo de software. Con una sólida trayectoria en gestión de servicios estudiantiles, enfoco mi carrera actual en la resolución avanzada de problemas técnicos, scripts de depuración de conexiones cliente-servidor y la optimización de plataformas tecnológicas.
-                </p>
-                <div id="edit-box-profile" class="inline-edit-box">
-                    <div class="form-group"><textarea id="input-profile" style="height: 100px;"></textarea></div>
-                    <button class="submit-btn" onclick="saveEdit('profile')">Guardar Cambios</button>
-                    <button class="cancel-btn" onclick="toggleEdit('profile')">Cancelar</button>
-                </div>
-            </section>
+        <!-- PERFIL PROFESIONAL -->
+        <section class="card" id="section-profile">
+            <h2>Perfil Profesional</h2>
+            <p class="p-text">
+                Profesional especializado en tecnologías de la información, infraestructura de redes y desarrollo de software. Con una sólida trayectoria en gestión de servicios estudiantiles, enfoco mi carrera actual en la resolución avanzada de problemas técnicos, scripts de depuración de conexiones cliente-servidor y la optimización de plataformas tecnológicas.
+            </p>
+        </section>
 
-            <section class="card" id="section-skills">
-                <h2>Habilidades Técnicas <button class="edit-btn" onclick="toggleEdit('skills')">✏️ Modificar</button></h2>
-                <div class="skills-grid" id="disp-skills">
-                    <div class="skill-column">
-                        <h3>Infraestructura & Redes</h3>
-                        <ul>
-                            <li>Configuración de Redes</li>
-                            <li>Soporte Técnico IT</li>
-                            <li>Optimización de Sistemas</li>
-                        </ul>
-                    </div>
-                    <div class="skill-column">
-                        <h3>Desarrollo & Debugging</h3>
-                        <ul>
-                            <li>Scripts Cliente-Servidor</li>
-                            <li>Depuración de Código</li>
-                            <li>Automatización</li>
-                        </ul>
-                    </div>
+        <!-- HABILIDADES TÉCNICAS -->
+        <section class="card" id="section-skills">
+            <h2>Habilidades Técnicas</h2>
+            <div class="skills-grid">
+                <div class="skill-box">
+                    <h3>Infraestructura & Redes</h3>
+                    <ul>
+                        <li>Configuración de Redes</li>
+                        <li>Soporte Técnico IT</li>
+                        <li>Optimización de Sistemas</li>
+                    </ul>
                 </div>
-                <div id="edit-box-skills" class="inline-edit-box">
-                    <div class="form-group"><textarea id="input-skills" style="height: 120px;"></textarea></div>
-                    <button class="submit-btn" onclick="saveEdit('skills')">Guardar Cambios</button>
-                    <button class="cancel-btn" onclick="toggleEdit('skills')">Cancelar</button>
+                <div class="skill-box">
+                    <h3>Desarrollo & Debugging</h3>
+                    <ul>
+                        <li>Scripts Cliente-Servidor</li>
+                        <li>Depuración de Código</li>
+                        <li>Automatización</li>
+                    </ul>
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
 
-        <!-- VISTA 2: PROYECTOS PERSONALES -->
-        <div id="projects-view" class="view-section">
-            <section class="card">
-                <h2>Proyectos Personales & Herramientas</h2>
-                <p class="p-text">Desarrollos orientados a la automatización de procesos, scripts de depuración y gestión de plataformas tecnológicas.</p>
-                <div class="project-container">
-                    <div class="project-item">
+        <!-- PROYECTOS PERSONALES -->
+        <section class="card" id="section-projects">
+            <h2>Proyectos Personales & Herramientas</h2>
+            <p class="p-text">Desarrollos orientados a la automatización de procesos, scripts de depuración y gestión de plataformas tecnológicas.</p>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-content">
                         <h3>Debugging Cliente-Servidor</h3>
                         <p>Scripts personalizados para el monitoreo y solución de problemas de conectividad en red.</p>
                     </div>
-                    <div class="project-item">
+                </div>
+                <div class="project-card">
+                    <div class="project-content">
                         <h3>Automatización de Torneos</h3>
                         <p>Generación dinámica de brackets y gestión de standings para eventos competitivos.</p>
                     </div>
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
 
-        <!-- VISTA 3: HOBBIES, JUEGOS Y DEPORTES -->
-        <div id="hobbies-view" class="view-section">
-            <section class="card">
-                <h2>Hobbies, Juegos & Deportes</h2>
-                <p class="p-text">Organización y participación activa en la comunidad de juegos de ritmo.</p>
-                <div class="hobbies-container">
-                    <div class="hobby-item">
-                        <h3>Pump It Up / ITGMania</h3>
-                        <p>Configuración avanzada de software, optimización de gráficos y gestión técnica para eventos.</p>
-                    </div>
-                    <div class="hobby-item">
-                        <h3>PIU MOD PERÚ</h3>
-                        <p>Orquestación de rondas eliminatorias online y actualización de tablas de clasificación.</p>
-                    </div>
-                    <div class="hobby-item">
-                        <h3>MOD International FEST</h3>
-                        <p>Soporte técnico y despliegue de dinámicas para fases presenciales y online.</p>
-                    </div>
+        <!-- HOBBIES, JUEGOS Y DEPORTES -->
+        <section class="card" id="section-hobbies">
+            <h2>Hobbies, Juegos & Deportes</h2>
+            <p class="p-text">Organización y participación activa en la comunidad de juegos de ritmo.</p>
+            <div class="hobbies-grid">
+                <div class="hobby-card">
+                    <h3>Pump It Up / ITGMania</h3>
+                    <p>Configuración avanzada de software, optimización de gráficos y gestión técnica para eventos.</p>
                 </div>
-            </section>
-        </div>
+                <div class="hobby-card">
+                    <h3>PIU MOD PERÚ</h3>
+                    <p>Orquestación de rondas eliminatorias online y actualización de tablas de clasificación.</p>
+                </div>
+                <div class="hobby-card">
+                    <h3>MOD International FEST</h3>
+                    <p>Soporte técnico y despliegue de dinámicas para fases presenciales y online.</p>
+                </div>
+            </div>
+        </section>
 
-        <!-- VISTA 4: SERVICIOS Y CONTACTO -->
-        <div id="contact-view" class="view-section">
-            <section class="card">
-                <h2>Servicios & Contacto</h2>
-                <div class="contact-links">
-                    <p class="p-text">Canales de comunicación directa para consultoría, soporte técnico y proyectos.</p>
-                    <div class="links-grid">
-                        <button class="contact-btn">Correo</button>
-                        <button class="contact-btn">GitHub</button>
-                        <button class="contact-btn">LinkedIn</button>
-                    </div>
+        <!-- SERVICIOS Y CONTACTO -->
+        <section class="card" id="section-contact">
+            <h2>Servicios & Contacto</h2>
+            <p class="p-text">Canales de comunicación directa para consultoría, soporte técnico y proyectos.</p>
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <h3>Correo</h3>
+                    <a href="mailto:contacto@bryangarcia.dev">Enviar mensaje</a>
                 </div>
-            </section>
-        </div>
+                <div class="contact-item">
+                    <h3>GitHub</h3>
+                    <a href="https://github.com" target="_blank">Ver perfiles</a>
+                </div>
+                <div class="contact-item">
+                    <h3>LinkedIn</h3>
+                    <a href="https://linkedin.com" target="_blank">Conectar</a>
+                </div>
+            </div>
+        </section>
     </main>
 </div>
 
