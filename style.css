@@ -171,8 +171,8 @@ aside {
 
 .avatar-overlay { 
     position: absolute; 
-    bottom: 5; 
-    right: 5; 
+    bottom: 4; 
+    right: 4; 
     background: var(--accent); 
     color: #0f172a; 
     width: 30px; 
@@ -459,6 +459,9 @@ th { color: var(--accent); font-weight: 600; }
     margin-bottom: 12px; 
     border-left: 3px solid var(--accent); 
     padding-left: 8px; 
+}
+.profile-info {
+    margin-top: 15px;
 }
 
 .cancel-btn { 
