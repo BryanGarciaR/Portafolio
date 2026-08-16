@@ -31,6 +31,19 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarDatosRemotos();
     cargarProyectosFirestore();
     cargarHobbiesFirestore();
+
+    // Evento para abrir el selector de avatar al hacer clic (solo si es admin)
+    const avatarContainer = document.querySelector('.avatar-container');
+    const avatarInput = document.getElementById('avatar-input'); 
+
+    if (avatarContainer && avatarInput) {
+        avatarContainer.addEventListener('click', () => {
+            if (!isAdmin) {
+                return; 
+            }
+            avatarInput.click();
+        });
+    }
 });
 
 /* ==========================================================
@@ -57,13 +70,12 @@ function syncAdminState(enabled) {
 
     // 2. Ocultar/Mostrar el icono de la cámara en el avatar
     const avatarOverlay = document.querySelector('.avatar-overlay');
-    
-    
     if (avatarOverlay) {
         avatarOverlay.style.display = enabled ? 'flex' : 'none';
     }
     
-    // Cambiar el cursor para que no parezca clickeable si no eres admin
+    // Cambiar el cursor para que parezca clickeable si no eres admin
+    const avatarContainer = document.querySelector('.avatar-container');
     if (avatarContainer) {
         avatarContainer.style.cursor = enabled ? 'pointer' : 'default';
     }
@@ -116,7 +128,6 @@ async function subirACloudinary(file) {
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_PRESET);
 
-    // Usar 'auto' es la forma más segura. Cloudinary detectará automáticamente el tipo.
     const uploadEndpoint = `https://api.cloudinary.com/v1_1/n4ni5wxl/auto/upload`;
 
     try {
@@ -166,10 +177,9 @@ if (hobbyForm) {
             
             mediaUrl = await subirACloudinary(file);
 
-            // Si Cloudinary falló, detenemos TODO.
             if (!mediaUrl) {
                 alert('❌ Operación cancelada: No se pudo subir el archivo multimedia.');
-                return; // Corta la ejecución, NO guarda los textos en Firebase.
+                return; 
             }
         }
 
@@ -207,10 +217,7 @@ function cargarHobbiesFirestore() {
             const h = doc.data();
             const id = doc.id;
             
-            // 1. Evitar el feo "undefined" si falta la categoría
             const categoryText = h.category ? h.category : 'Hobby';
-            
-            // 2. Comprobación inteligente de video
             const isVideo = h.type === 'video' || (h.media && h.media.match(/\.(mp4|webm|ogg|mov)$/i));
 
             container.innerHTML += `
@@ -241,15 +248,10 @@ function deleteHobby(id) {
     }
 }
 
-
-    
-    const avatarContainer = document.querySelector('.avatar-container');
-    
 /* ==========================================================
    GESTIÓN DE AVATAR
    ========================================================== */
 async function updateAvatar(event) {
-    // Doble validación de seguridad por si acaso
     if (!isAdmin) return;
 
     const file = event.target.files[0];
