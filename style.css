@@ -145,11 +145,12 @@ aside {
 }
 
 .avatar-container {
-    position: relative;
+    position: relative; /* Mantén esto para que el ícono se posicione DENTRO */
     width: 100px;
     height: 100px;
-    margin: 0 auto 25px; 
+    margin: 0 auto 30px; /* <--- MODIFICA ESTO: 0 arriba, centrado horizontal, 30px abajo */
     cursor: pointer;
+    /* Asegúrate de que no tenga top, left, right, o bottom aquí */
 }
 .avatar-placeholder, .avatar-img {
     width: 100%;  /* Usa 100% en lugar de 100px */
@@ -170,18 +171,9 @@ aside {
 
 .avatar-overlay {
     position: absolute;
-    bottom: 0px;
-    right: 0px;
-    background: var(--accent);
-    color: #0f172a;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    border: 2px solid var(--bg-card);
+    bottom: 5px; /* <--- CAMBIA DE 0 A 5px (para subirlo un poco) */
+    right: 5px;  /* <--- CAMBIA DE 0 A 5px (para meterlo a la izquierda) */
+    /* ... resto de tus estilos (background, width, height, etc.) ... */
 }
 aside h1 {
     display: block;
