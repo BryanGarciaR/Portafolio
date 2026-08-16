@@ -241,18 +241,31 @@ function deleteHobby(id) {
     }
 }
 
+
+    
+    const avatarContainer = document.querySelector('.avatar-container');
+    const avatarInput = document.getElementById('avatarInput'); // Asegúrate que tu input file tenga este ID
+
+    if (avatarContainer && avatarInput) {
+        avatarContainer.addEventListener('click', () => {
+            // Si NO es admin, no hacemos absolutamente nada (se ignora el clic)
+            if (!isAdmin) {
+                return; 
+            }
+            // Si SÍ es admin, abrimos el selector de archivos
+            avatarInput.click();
+        });
+    }
+});
 /* ==========================================================
    GESTIÓN DE AVATAR
    ========================================================== */
 async function updateAvatar(event) {
+    // Doble validación de seguridad por si acaso
+    if (!isAdmin) return;
+
     const file = event.target.files[0];
     if (!file) return;
-
-    if (!isAdmin) {
-        alert('Debes iniciar sesión como Administrador para cambiar el avatar.');
-        verificarAdmin();
-        return;
-    }
 
     alert('Subiendo avatar a la nube...');
     const url = await subirACloudinary(file);
