@@ -98,34 +98,37 @@ async function subirACloudinary(file) {
 }
 
 /* ==========================================================
-   GESTIÓN DE AVATAR (Cloudinary + Firebase)
+   GESTIÓN DE AVATAR (Cloudinary + Firebase) - Mejorado
    ========================================================== */
 async function updateAvatar(event) {
     const file = event.target.files[0];
-    if (file) {
-        alert('Subiendo avatar a la nube...');
-        const url = await subirACloudinary(file);
-        if (url) {
-            aplicarImagenAvatar(url);
-            try {
-                await db.collection('portfolio').doc('config').set({ avatar: url }, { merge: true });
-                alert('¡Avatar actualizado y guardado en Firebase!');
-            } catch (err) {
-                console.error("Error al guardar avatar en Firestore:", err);
-            }
-        }
-    }
-}
+    if (!file) return;
 
-function aplicarImagenAvatar(src) {
-    const wrapper = document.getElementById('avatar-display-wrapper');
-    if (wrapper) {
-        wrapper.innerHTML = `<img src="${src}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%;">`;
+    if (!isAdmin) {
+        alert('Debes iniciar sesión como Administrador para cambiar el avatar.');
+        verificarAdmin();
+        return;
+    }
+
+    alert('Subiendo avatar a la nube...');
+    const url = await subirACloudinary(file);
+    
+    if (url) {
+        aplicarImagenAvatar(url);
+        try {
+            await db.collection('portfolio').doc('config').set({ avatar: url }, { merge: true });
+            alert('¡Avatar actualizado y guardado en Firebase con éxito!');
+        } catch (err) {
+            console.error("Error crítico al guardar avatar en Firestore:", err);
+            alert('Error al guardar la URL en Firebase. Revisa las reglas de seguridad de tu base de datos.');
+        }
+    } else {
+        alert('No se pudo obtener la URL de Cloudinary. Revisa la consola (F12).');
     }
 }
 
 /* ==========================================================
-   EDICIÓN RÁPIDA DE SECCIONES (Abre/Cierra cajas y Guarda)
+   EDICIÓN RÁPIDA DE SECCIONES (Modo Admin) - Forzado visual
    ========================================================== */
 function toggleEdit(sectionKey) {
     if (!isAdmin) {
@@ -134,22 +137,23 @@ function toggleEdit(sectionKey) {
     }
 
     const editBox = document.getElementById(`edit-box-${sectionKey}`);
-    const dispEl = document.getElementById(`disp-${sectionKey}`);
+    const dispEl = document.getElementById(`disp-${sectionKey}`) || document.getElementById(`disp-${sectionKey}-intro`);
 
-    if (!editBox) return;
+    if (!editBox) {
+        alert(`No se encontró el contenedor de edición para: edit-box-${sectionKey}`);
+        return;
+    }
 
-    // Alternar visibilidad de la caja de edición
-    if (editBox.style.display === 'block') {
+    // Forzar apertura visual explícita
+    if (editBox.style.display === 'block' || window.getComputedStyle(editBox).display === 'block') {
         editBox.style.display = 'none';
     } else {
         editBox.style.display = 'block';
         
-        // Si es una sección de texto simple, precargar el valor actual en el textarea
-        if (sectionKey === 'profile' || sectionKey === 'events' || sectionKey === 'skills' || sectionKey === 'certs') {
-            const inputEl = document.getElementById(`input-${sectionKey}`);
-            if (inputEl && dispEl) {
-                inputEl.value = dispEl.innerText.trim();
-            }
+        // Precargar texto actual si existe el input correspondiente
+        const inputEl = document.getElementById(`input-${sectionKey}`);
+        if (inputEl && dispEl) {
+            inputEl.value = dispEl.innerText.trim();
         }
     }
 }
