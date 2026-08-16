@@ -4,7 +4,7 @@
 const firebaseConfig = {
     apiKey: "AIzaSyDx_gaDRKRWcXbykR0w9K6T-XdvQ6mumIk",
     authDomain: "bryangr-dev.firebaseapp.com",
-    projectId: "BryanGR-dev",
+    projectId: "bryangr-dev",
     storageBucket: "bryangr-dev.firebasestorage.app",
     messagingSenderId: "505846189271",
     appId: "505846189271:web:dafffb1c5d6a3b33a7b492"
