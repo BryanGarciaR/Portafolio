@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarProyectosFirestore();
     cargarHobbiesFirestore();
 
-    // Evento para abrir el selector de avatar al hacer clic (bloqueado si no es admin)
+    // Evento seguro para el avatar
     const avatarContainer = document.querySelector('.avatar-container');
     const avatarInput = document.getElementById('avatar-input'); 
 
@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.stopPropagation();
                 return;
             }
-            avatarInput.click();
         });
     }
 });
@@ -76,10 +75,16 @@ function syncAdminState(enabled) {
         avatarOverlay.style.display = enabled ? 'flex' : 'none';
     }
     
-    // Cambiar el cursor para que no parezca clickeable si no eres admin
+    // 3. Cambiar cursor y bloquear/desbloquear el input nativo del avatar
     const avatarContainer = document.querySelector('.avatar-container');
+    const avatarInput = document.getElementById('avatar-input');
+
     if (avatarContainer) {
         avatarContainer.style.cursor = enabled ? 'pointer' : 'default';
+    }
+    
+    if (avatarInput) {
+        avatarInput.disabled = !enabled; // Bloquea o habilita el input nativamente
     }
 }
 
