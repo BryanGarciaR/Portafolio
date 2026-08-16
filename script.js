@@ -16,8 +16,8 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// CONFIGURACIÓN CORRECTA DE CLOUDINARY PARA EL NAVEGADOR
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4ni5wxl/upload";
+// Configuración de Cloudinary para el navegador
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4nl5wxl/upload";
 const CLOUDINARY_PRESET = "portafolio_preset";
 
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
@@ -125,27 +125,128 @@ function aplicarImagenAvatar(src) {
 }
 
 /* ==========================================================
-   EDICIÓN RÁPIDA DE SECCIONES (Modo Admin)
+   EDICIÓN RÁPIDA DE SECCIONES (Abre/Cierra cajas y Guarda)
    ========================================================== */
-async function toggleEdit(sectionKey) {
+function toggleEdit(sectionKey) {
     if (!isAdmin) {
         verificarAdmin();
         return;
     }
-    
-    const nuevoTexto = prompt(`Modificar contenido para [${sectionKey.toUpperCase()}]:\nIngresa el nuevo texto:`);
-    if (nuevoTexto !== null && nuevoTexto.trim() !== "") {
-        try {
-            await db.collection('portfolio').doc('config').set({
-                [sectionKey]: nuevoTexto
-            }, { merge: true });
-            alert('¡Modificación guardada en Firebase!');
-            cargarDatosRemotos();
-        } catch (error) {
-            console.error("Error al actualizar sección:", error);
-            alert("Hubo un error al guardar en Firebase.");
+
+    const editBox = document.getElementById(`edit-box-${sectionKey}`);
+    const dispEl = document.getElementById(`disp-${sectionKey}`);
+
+    if (!editBox) return;
+
+    // Alternar visibilidad de la caja de edición
+    if (editBox.style.display === 'block') {
+        editBox.style.display = 'none';
+    } else {
+        editBox.style.display = 'block';
+        
+        // Si es una sección de texto simple, precargar el valor actual en el textarea
+        if (sectionKey === 'profile' || sectionKey === 'events' || sectionKey === 'skills' || sectionKey === 'certs') {
+            const inputEl = document.getElementById(`input-${sectionKey}`);
+            if (inputEl && dispEl) {
+                inputEl.value = dispEl.innerText.trim();
+            }
         }
     }
+}
+
+async function saveEdit(sectionKey) {
+    if (!isAdmin) return;
+
+    try {
+        let payload = {};
+
+        if (sectionKey === 'profile' || sectionKey === 'events' || sectionKey === 'skills' || sectionKey === 'certs') {
+            const val = document.getElementById(`input-${sectionKey}`).value;
+            payload[sectionKey] = val;
+        } else if (sectionKey === 'contact') {
+            payload.srv1Title = document.getElementById('input-srv1-title').value;
+            payload.srv1Desc = document.getElementById('input-srv1-desc').value;
+            payload.srv2Title = document.getElementById('input-srv2-title').value;
+            payload.srv2Desc = document.getElementById('input-srv2-desc').value;
+            payload.phone = document.getElementById('input-phone').value;
+            payload.wsp = document.getElementById('input-wsp').value;
+            payload.fb = document.getElementById('input-fb').value;
+            payload.tk = document.getElementById('input-tk').value;
+        }
+
+        await db.collection('portfolio').doc('config').set(payload, { merge: true });
+        alert('¡Cambios guardados con éxito en Firebase!');
+        toggleEdit(sectionKey);
+        cargarDatosRemotos();
+    } catch (error) {
+        console.error("Error al guardar cambios:", error);
+        alert('Hubo un error al guardar los cambios.');
+    }
+}
+
+/* ==========================================================
+   CARGA DE CONFIGURACIÓN GLOBAL DESDE FIREBASE
+   ========================================================== */
+function cargarDatosRemotos() {
+    db.collection('portfolio').doc('config').get().then((doc) => {
+        if (doc.exists) {
+            const data = doc.data();
+            
+            if (data.avatar) aplicarImagenAvatar(data.avatar);
+            if (data.profile) {
+                const el = document.getElementById('disp-profile');
+                if (el) el.innerText = data.profile;
+            }
+            if (data.events) {
+                const el = document.getElementById('disp-events-intro');
+                if (el) el.innerText = data.events;
+            }
+            if (data.skills) {
+                const el = document.getElementById('input-skills');
+                if (el) el.value = data.skills;
+            }
+            if (data.certs) {
+                const el = document.getElementById('input-certs');
+                if (el) el.value = data.certs;
+            }
+
+            // Datos de contacto y servicios
+            if (data.srv1Title) {
+                document.getElementById('disp-srv1-title').innerHTML = `<i class="fa-solid fa-screwdriver-wrench"></i> ${data.srv1Title}`;
+                document.getElementById('input-srv1-title').value = data.srv1Title;
+            }
+            if (data.srv1Desc) {
+                document.getElementById('disp-srv1-desc').innerText = data.srv1Desc;
+                document.getElementById('input-srv1-desc').value = data.srv1Desc;
+            }
+            if (data.srv2Title) {
+                document.getElementById('disp-srv2-title').innerHTML = `<i class="fa-solid fa-microchip"></i> ${data.srv2Title}`;
+                document.getElementById('input-srv2-title').value = data.srv2Title;
+            }
+            if (data.srv2Desc) {
+                document.getElementById('disp-srv2-desc').innerText = data.srv2Desc;
+                document.getElementById('input-srv2-desc').value = data.srv2Desc;
+            }
+            if (data.phone) {
+                document.getElementById('disp-phone').innerText = data.phone;
+                document.getElementById('input-phone').value = data.phone;
+            }
+            if (data.wsp) {
+                document.getElementById('disp-wsp-link').href = data.wsp;
+                document.getElementById('input-wsp').value = data.wsp;
+            }
+            if (data.fb) {
+                document.getElementById('disp-fb-link').href = data.fb;
+                document.getElementById('input-fb').value = data.fb;
+            }
+            if (data.tk) {
+                document.getElementById('disp-tk-link').href = data.tk;
+                document.getElementById('input-tk').value = data.tk;
+            }
+        }
+    }).catch((error) => {
+        console.error("Error al cargar configuración:", error);
+    });
 }
 
 /* ==========================================================
@@ -179,9 +280,6 @@ if (projectForm) {
             alert('¡Proyecto guardado con éxito en Firebase!');
             projectForm.reset();
             cargarProyectosFirestore();
-            
-            // Opcional: si quieres que al terminar te devuelva al portafolio principal
-            // switchView('view-portafolio', document.querySelector('.nav-btn'));
         } catch (error) {
             console.error("Error al guardar proyecto:", error);
             alert('Hubo un error al registrar el proyecto.');
@@ -307,25 +405,4 @@ function deleteHobby(id) {
             cargarHobbiesFirestore();
         });
     }
-}
-
-/* ==========================================================
-   CARGA DE CONFIGURACIÓN GLOBAL (Avatar y textos)
-   ========================================================== */
-function cargarDatosRemotos() {
-    db.collection('portfolio').doc('config').get().then((doc) => {
-        if (doc.exists) {
-            const data = doc.data();
-            if (data.avatar) {
-                aplicarImagenAvatar(data.avatar);
-            }
-            // Rellena textos si guardaste secciones personalizadas
-            Object.keys(data).forEach(key => {
-                const el = document.getElementById(`texto-${key}`);
-                if (el) el.innerText = data[key];
-            });
-        }
-    }).catch((error) => {
-        console.error("Error al cargar configuración:", error);
-    });
 }
