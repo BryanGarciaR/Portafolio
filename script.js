@@ -53,7 +53,6 @@ function verificarAdmin() {
 }
 
 function aplicarModoAdminVisual() {
-    // Si quieres ocultar o mostrar los botones de editar según el rol
     const editBtns = document.querySelectorAll('.edit-btn');
     editBtns.forEach(btn => {
         btn.style.display = isAdmin ? 'inline-block' : 'none';
@@ -75,29 +74,19 @@ function toggleEdit(sectionKey) {
     const isActive = editBox.classList.contains('active');
 
     if (!isActive) {
-        // Cargar datos actuales en los inputs al abrir el editor
         if (sectionKey === 'profile') {
-            const disp = document.getElementById('disp-profile');
-            const input = document.getElementById('input-profile');
-            if (disp && input) input.value = disp.innerText.trim();
+            setVal('input-profile', getTxt('disp-profile'));
         } 
         else if (sectionKey === 'skills') {
-            const disp = document.getElementById('disp-skills-container');
-            const input = document.getElementById('input-skills');
-            if (disp && input) input.value = disp.innerHTML.trim();
+            setVal('input-skills', getHtml('disp-skills-container'));
         } 
         else if (sectionKey === 'events') {
-            const disp = document.getElementById('disp-events-intro');
-            const input = document.getElementById('input-events');
-            if (disp && input) input.value = disp.innerHTML.trim();
+            setVal('input-events', getHtml('disp-events-intro'));
         } 
         else if (sectionKey === 'certs') {
-            const disp = document.getElementById('disp-certs');
-            const input = document.getElementById('input-certs');
-            if (disp && input) input.value = disp.innerHTML.trim();
+            setVal('input-certs', getHtml('disp-certs'));
         } 
         else if (sectionKey === 'contact') {
-            // Cargar campos de contacto y servicios
             setVal('input-srv1-title', getTxt('disp-srv1-title'));
             setVal('input-srv1-desc', getTxt('disp-srv1-desc'));
             setVal('input-srv2-title', getTxt('disp-srv2-title'));
@@ -150,26 +139,23 @@ function saveEdit(sectionKey) {
         }
     }
     toggleEdit(sectionKey);
+    alert('¡Cambios guardados con éxito!');
 }
 
 function cargarDatosLocales() {
     const savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
 
     if (savedData['profile']) {
-        const el = document.getElementById('disp-profile');
-        if (el) el.innerText = savedData['profile'];
+        setTxt('disp-profile', savedData['profile']);
     }
     if (savedData['skills']) {
-        const el = document.getElementById('disp-skills-container');
-        if (el) el.innerHTML = savedData['skills'];
+        setHtml('disp-skills-container', savedData['skills']);
     }
     if (savedData['events']) {
-        const el = document.getElementById('disp-events-intro');
-        if (el) el.innerHTML = savedData['events'];
+        setHtml('disp-events-intro', savedData['events']);
     }
     if (savedData['certs']) {
-        const el = document.getElementById('disp-certs');
-        if (el) el.innerHTML = savedData['certs'];
+        setHtml('disp-certs', savedData['certs']);
     }
     if (savedData['contact']) {
         aplicarDatosContacto(savedData['contact']);
@@ -190,6 +176,8 @@ function aplicarDatosContacto(data) {
 /* Helpers de utilidad para el DOM */
 function getTxt(id) { const el = document.getElementById(id); return el ? el.innerText : ''; }
 function setTxt(id, val) { const el = document.getElementById(id); if(el) el.innerText = val; }
+function getHtml(id) { const el = document.getElementById(id); return el ? el.innerHTML : ''; }
+function setHtml(id, val) { const el = document.getElementById(id); if(el) el.innerHTML = val; }
 function getVal(id) { const el = document.getElementById(id); return el ? el.value : ''; }
 function setVal(id, val) { const el = document.getElementById(id); if(el) el.value = val; }
 function setAttr(id, attr, val) { const el = document.getElementById(id); if(el) el.setAttribute(attr, val); }
@@ -200,29 +188,32 @@ function setValAttr(inputId, dispId, attr) {
 }
 
 /* ==========================================================
-   AVATAR Y FOTO DE PERFIL
+   AVATAR Y FOTO DE PERFIL (CORRECCIÓN DE PERSISTENCIA Y FORMA)
    ========================================================== */
 function updateAvatar(event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const wrapper = document.getElementById('avatar-display-wrapper');
-            wrapper.innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            aplicarImagenAvatar(e.target.result);
             localStorage.setItem('portfolio_avatar', e.target.result);
         };
         reader.readAsDataURL(file);
     }
 }
 
-// Cargar avatar guardado al iniciar
+function aplicarImagenAvatar(src) {
+    const wrapper = document.getElementById('avatar-display-wrapper');
+    if (wrapper) {
+        // Aseguramos que conserve la estructura circular heredada del CSS del contenedor
+        wrapper.innerHTML = `<img src="${src}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const savedAvatar = localStorage.getItem('portfolio_avatar');
     if (savedAvatar) {
-        const wrapper = document.getElementById('avatar-display-wrapper');
-        if (wrapper) {
-            wrapper.innerHTML = `<img src="${savedAvatar}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-        }
+        aplicarImagenAvatar(savedAvatar);
     }
 });
 
