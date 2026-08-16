@@ -71,7 +71,7 @@ function switchView(viewId, btnElement) {
 }
 
 /* ==========================================================
-   EDICIÓN EN LÍNEA
+   EDICIÓN EN LÍNEA (CORREGIDO)
    ========================================================== */
 function toggleEdit(sectionKey) {
     if (!isAdmin) { verificarAdmin(); return; }
@@ -86,14 +86,9 @@ function toggleEdit(sectionKey) {
             const input = document.getElementById('input-profile');
             if (disp && input) input.value = disp.innerText.trim();
         } else if (sectionKey === 'skills') {
-            for(let i=1; i<=3; i++) {
-                const t = document.getElementById(`disp-skill${i}-title`);
-                const d = document.getElementById(`disp-skill${i}-desc`);
-                const it = document.getElementById(`input-skill${i}-title`);
-                const id = document.getElementById(`input-skill${i}-desc`);
-                if (t && it) it.value = t.innerText.trim();
-                if (d && id) id.value = d.innerText.trim();
-            }
+            const disp = document.getElementById('disp-skills');
+            const input = document.getElementById('input-skills');
+            if (disp && input) input.value = disp.innerHTML.trim();
         } else if (sectionKey === 'events') {
             const disp = document.getElementById('disp-events-intro');
             const input = document.getElementById('input-events');
@@ -118,19 +113,10 @@ function saveEdit(sectionKey) {
         if (disp) disp.innerText = val;
         savedData['profile'] = val;
     } else if (sectionKey === 'skills') {
-        let skillsObj = {};
-        for(let i=1; i<=3; i++) {
-            const tVal = document.getElementById(`input-skill${i}-title`).value;
-            const dVal = document.getElementById(`input-skill${i}-desc`).value;
-            skillsObj[`s${i}t`] = tVal;
-            skillsObj[`s${i}d`] = dVal;
-
-            const dt = document.getElementById(`disp-skill${i}-title`);
-            const dd = document.getElementById(`disp-skill${i}-desc`);
-            if (dt) dt.innerText = tVal;
-            if (dd) dd.innerText = dVal;
-        }
-        savedData['skills'] = skillsObj;
+        const val = document.getElementById('input-skills').value;
+        const disp = document.getElementById('disp-skills');
+        if (disp) disp.innerHTML = val;
+        savedData['skills'] = val;
     } else if (sectionKey === 'events') {
         const val = document.getElementById('input-events').value;
         const disp = document.getElementById('disp-events-intro');
@@ -263,7 +249,7 @@ async function eliminar(col, id) {
 }
 
 /* ==========================================================
-   CARGA DE DATOS LOCALES Y PERSISTENCIA
+   CARGA DE DATOS LOCALES Y PERSISTENCIA (CORREGIDO)
    ========================================================== */
 function cargarDatosLocales() {
     const savedAvatar = localStorage.getItem('portfolio_avatar');
@@ -280,14 +266,10 @@ function cargarDatosLocales() {
         const disp = document.getElementById('disp-profile');
         if (disp) disp.innerText = savedData['profile'];
     }
+    // Nueva gestión para skills como bloque completo
     if (savedData['skills']) {
-        const s = savedData['skills'];
-        for(let i=1; i<=3; i++) {
-            const dt = document.getElementById(`disp-skill${i}-title`);
-            const dd = document.getElementById(`disp-skill${i}-desc`);
-            if(dt) dt.innerText = s[`s${i}t`];
-            if(dd) dd.innerText = s[`s${i}d`];
-        }
+        const disp = document.getElementById('disp-skills');
+        if (disp) disp.innerHTML = savedData['skills'];
     }
     if (savedData['events']) {
         const disp = document.getElementById('disp-events-intro');
