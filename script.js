@@ -32,14 +32,16 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarProyectosFirestore();
     cargarHobbiesFirestore();
 
-    // Evento para abrir el selector de avatar al hacer clic (solo si es admin)
+    // Evento para abrir el selector de avatar al hacer clic (bloqueado si no es admin)
     const avatarContainer = document.querySelector('.avatar-container');
     const avatarInput = document.getElementById('avatar-input'); 
 
     if (avatarContainer && avatarInput) {
-        avatarContainer.addEventListener('click', () => {
+        avatarContainer.addEventListener('click', (e) => {
             if (!isAdmin) {
-                return; 
+                e.preventDefault();
+                e.stopPropagation();
+                return;
             }
             avatarInput.click();
         });
@@ -74,7 +76,7 @@ function syncAdminState(enabled) {
         avatarOverlay.style.display = enabled ? 'flex' : 'none';
     }
     
-    // Cambiar el cursor para que parezca clickeable si no eres admin
+    // Cambiar el cursor para que no parezca clickeable si no eres admin
     const avatarContainer = document.querySelector('.avatar-container');
     if (avatarContainer) {
         avatarContainer.style.cursor = enabled ? 'pointer' : 'default';
