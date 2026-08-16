@@ -332,7 +332,7 @@ function cargarDatosRemotos() {
                     document.getElementById('input-tk').value = data.contact.tk;
                 }
             }
-        }
+        
     }).catch((error) => {
         console.warn("Aviso: No se pudo conectar a Firestore.", error);
     });
