@@ -168,7 +168,7 @@ aside {
     align-items: center;
     justify-content: center;
 }
-avatar-overlay {
+.avatar-overlay {
     position: absolute;
     bottom: 5px;
     right: 5px;
