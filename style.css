@@ -170,8 +170,8 @@ aside {
 
 .avatar-overlay {
     position: absolute;
-    bottom: 2px; 
-    right: 2px;
+    bottom: 8px; 
+    right: 8px;  
     background: var(--accent);
     color: #0f172a;
     width: 28px;
@@ -186,7 +186,7 @@ aside {
 aside h1 {
     display: block;
     font-size: 1.4rem;
-    margin-top: 25px !important;
+    margin-top: 35px !important; 
     margin-bottom: 5px;
     color: #fff;
     clear: both;
