@@ -58,13 +58,19 @@ function aplicarModoAdminVisual() {
         lockIcon.className = isAdmin ? "fa-solid fa-unlock" : "fa-solid fa-lock";
     }
 
-    // 2. Mostrar u ocultar botones de modificar en las secciones
+    // 2. Mostrar u ocultar el icono de la cámara del avatar
+    const avatarEditBtn = document.querySelector('.avatar-edit-btn'); // O la clase/id que tenga tu botón de la cámara
+    if (avatarEditBtn) {
+        avatarEditBtn.style.display = isAdmin ? 'flex' : 'none'; // o 'block' según uses
+    }
+
+    // 3. Mostrar u ocultar botones de modificar en las secciones
     const editBtns = document.querySelectorAll('.edit-btn');
     editBtns.forEach(btn => {
         btn.style.display = isAdmin ? 'inline-block' : 'none';
     });
 
-    // 3. Mostrar u ocultar formularios de subida (Proyectos y Hobbies)
+    // 4. Mostrar u ocultar formularios de subida (Proyectos y Hobbies)
     const projectForm = document.getElementById('project-form');
     if (projectForm) {
         projectForm.parentElement.style.display = isAdmin ? 'block' : 'none';
