@@ -1,37 +1,35 @@
 /* ==========================================================
-   CONFIGURACIÓN Y VARIABLES GLOBALES
+   CONFIGURACIÓN DE FIREBASE Y CLOUDINARY
    ========================================================== */
+// Reemplaza con tus credenciales reales de Firebase
+const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    projectId: "BryanGR-dev", // Tu proyecto actual en Firebase
+    storageBucket: "TU_STORAGE_BUCKET",
+    messagingSenderId: "TU_MESSAGING_SENDER_ID",
+    appId: "TU_APP_ID"
+};
+
+// Inicializar Firebase (Requiere SDKs de Firebase en el HTML)
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Configuración de Cloudinary
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/TU_CLOUD_NAME/upload"; // Reemplaza TU_CLOUD_NAME
+const CLOUDINARY_PRESET = "TU_UPLOAD_PRESET"; // Reemplaza con tu Upload Preset de Cloudinary
+
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
 
 document.addEventListener('DOMContentLoaded', () => {
     aplicarModoAdminVisual();
-    cargarDatosLocales();
-    renderProjectsFromStorage();
-    renderHobbiesFromStorage();
+    cargarDatosRemotos();
+    cargarProyectosFirestore();
+    cargarHobbiesFirestore();
 });
 
 /* ==========================================================
-   NAVEGACIÓN ENTRE VISTAS
-   ========================================================== */
-function switchView(viewId, btn) {
-    document.querySelectorAll('.view-section').forEach(sec => {
-        sec.classList.remove('active');
-    });
-    document.querySelectorAll('.nav-btn').forEach(b => {
-        b.classList.remove('active');
-    });
-
-    const targetView = document.getElementById(viewId);
-    if (targetView) {
-        targetView.classList.add('active');
-    }
-    if (btn) {
-        btn.classList.add('active');
-    }
-}
-
-/* ==========================================================
-   GESTIÓN DE ADMINISTRADOR (Contraseña: bryan2026)
+   AUTENTICACIÓN DE ADMINISTRADOR
    ========================================================== */
 function verificarAdmin() {
     if (isAdmin) {
@@ -60,274 +58,234 @@ function aplicarModoAdminVisual() {
 }
 
 /* ==========================================================
-   EDICIÓN EN LÍNEA (SECCIONES: Perfil, Skills, Eventos, Certs, Contacto)
+   NAVEGACIÓN ENTRE VISTAS
    ========================================================== */
-function toggleEdit(sectionKey) {
-    if (!isAdmin) { 
-        verificarAdmin(); 
-        return; 
-    }
-    
-    const editBox = document.getElementById('edit-box-' + sectionKey);
-    if (!editBox) return;
+function switchView(viewId, btn) {
+    document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-    const isActive = editBox.classList.contains('active');
-
-    if (!isActive) {
-        if (sectionKey === 'profile') {
-            setVal('input-profile', getTxt('disp-profile'));
-        } 
-        else if (sectionKey === 'skills') {
-            setVal('input-skills', getHtml('disp-skills-container'));
-        } 
-        else if (sectionKey === 'events') {
-            setVal('input-events', getHtml('disp-events-intro'));
-        } 
-        else if (sectionKey === 'certs') {
-            setVal('input-certs', getHtml('disp-certs'));
-        } 
-        else if (sectionKey === 'contact') {
-            setVal('input-srv1-title', getTxt('disp-srv1-title'));
-            setVal('input-srv1-desc', getTxt('disp-srv1-desc'));
-            setVal('input-srv2-title', getTxt('disp-srv2-title'));
-            setVal('input-srv2-desc', getTxt('disp-srv2-desc'));
-            setVal('input-phone', getTxt('disp-phone'));
-            setValAttr('input-wsp', 'disp-wsp-link', 'href');
-            setValAttr('input-fb', 'disp-fb-link', 'href');
-            setValAttr('input-tk', 'disp-tk-link', 'href');
-        }
-    }
-    editBox.classList.toggle('active');
-}
-
-function saveEdit(sectionKey) {
-    if (!isAdmin) { alert('Acción no permitida'); return; }
-    let savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
-
-    if (sectionKey === 'contact') {
-        const data = {
-            srv1Title: getVal('input-srv1-title'),
-            srv1Desc: getVal('input-srv1-desc'),
-            srv2Title: getVal('input-srv2-title'),
-            srv2Desc: getVal('input-srv2-desc'),
-            phone: getVal('input-phone'),
-            wsp: getVal('input-wsp'),
-            fb: getVal('input-fb'),
-            tk: getVal('input-tk')
-        };
-        savedData['contact'] = data;
-        localStorage.setItem('portfolio_edits', JSON.stringify(savedData));
-        aplicarDatosContacto(data);
-    } else {
-        const inputId = 'input-' + sectionKey;
-        const dispId = sectionKey === 'skills' ? 'disp-skills-container' : 
-                       sectionKey === 'profile' ? 'disp-profile' :
-                       sectionKey === 'events' ? 'disp-events-intro' : 'disp-certs';
-        
-        const inputEl = document.getElementById(inputId);
-        const dispEl = document.getElementById(dispId);
-
-        if (inputEl && dispEl) {
-            const val = inputEl.value;
-            if (sectionKey === 'skills' || sectionKey === 'certs' || sectionKey === 'events') {
-                dispEl.innerHTML = val;
-            } else {
-                dispEl.innerText = val;
-            }
-            savedData[sectionKey] = val;
-            localStorage.setItem('portfolio_edits', JSON.stringify(savedData));
-        }
-    }
-    toggleEdit(sectionKey);
-    alert('¡Cambios guardados con éxito!');
-}
-
-function cargarDatosLocales() {
-    const savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
-
-    if (savedData['profile']) {
-        setTxt('disp-profile', savedData['profile']);
-    }
-    if (savedData['skills']) {
-        setHtml('disp-skills-container', savedData['skills']);
-    }
-    if (savedData['events']) {
-        setHtml('disp-events-intro', savedData['events']);
-    }
-    if (savedData['certs']) {
-        setHtml('disp-certs', savedData['certs']);
-    }
-    if (savedData['contact']) {
-        aplicarDatosContacto(savedData['contact']);
-    }
-}
-
-function aplicarDatosContacto(data) {
-    setTxt('disp-srv1-title', data.srv1Title);
-    setTxt('disp-srv1-desc', data.srv1Desc);
-    setTxt('disp-srv2-title', data.srv2Title);
-    setTxt('disp-srv2-desc', data.srv2Desc);
-    setTxt('disp-phone', data.phone);
-    setAttr('disp-wsp-link', 'href', data.wsp);
-    setAttr('disp-fb-link', 'href', data.fb);
-    setAttr('disp-tk-link', 'href', data.tk);
-}
-
-/* Helpers de utilidad para el DOM */
-function getTxt(id) { const el = document.getElementById(id); return el ? el.innerText : ''; }
-function setTxt(id, val) { const el = document.getElementById(id); if(el) el.innerText = val; }
-function getHtml(id) { const el = document.getElementById(id); return el ? el.innerHTML : ''; }
-function setHtml(id, val) { const el = document.getElementById(id); if(el) el.innerHTML = val; }
-function getVal(id) { const el = document.getElementById(id); return el ? el.value : ''; }
-function setVal(id, val) { const el = document.getElementById(id); if(el) el.value = val; }
-function setAttr(id, attr, val) { const el = document.getElementById(id); if(el) el.setAttribute(attr, val); }
-function setValAttr(inputId, dispId, attr) {
-    const dispEl = document.getElementById(dispId);
-    const inputEl = document.getElementById(inputId);
-    if(dispEl && inputEl) inputEl.value = dispEl.getAttribute(attr) || '';
+    const targetView = document.getElementById(viewId);
+    if (targetView) targetView.classList.add('active');
+    if (btn) btn.classList.add('active');
 }
 
 /* ==========================================================
-   AVATAR Y FOTO DE PERFIL (CORRECCIÓN DE PERSISTENCIA Y FORMA)
+   SUBIR ARCHIVOS A CLOUDINARY
    ========================================================== */
-function updateAvatar(event) {
+async function subirACloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+
+    try {
+        const response = await fetch(CLOUDINARY_URL, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.secure_url) {
+            return data.secure_url;
+        } else {
+            throw new Error('Error al subir la imagen a Cloudinary');
+        }
+    } catch (error) {
+        console.error("Cloudinary Error:", error);
+        alert('Hubo un error al subir el archivo multimedia.');
+        return null;
+    }
+}
+
+/* ==========================================================
+   GESTIÓN DE AVATAR (Cloudinary + Firebase)
+   ========================================================== */
+async function updateAvatar(event) {
     const file = event.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            aplicarImagenAvatar(e.target.result);
-            localStorage.setItem('portfolio_avatar', e.target.result);
-        };
-        reader.readAsDataURL(file);
+        alert('Subiendo avatar a la nube...');
+        const url = await subirACloudinary(file);
+        if (url) {
+            aplicarImagenAvatar(url);
+            await db.collection('portfolio').doc('config').set({ avatar: url }, { merge: true });
+            alert('¡Avatar actualizado en la nube!');
+        }
     }
 }
 
 function aplicarImagenAvatar(src) {
     const wrapper = document.getElementById('avatar-display-wrapper');
     if (wrapper) {
-        // Aseguramos que conserve la estructura circular heredada del CSS del contenedor
-        wrapper.innerHTML = `<img src="${src}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
+        wrapper.innerHTML = `<img src="${src}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%;">`;
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const savedAvatar = localStorage.getItem('portfolio_avatar');
-    if (savedAvatar) {
-        aplicarImagenAvatar(savedAvatar);
-    }
-});
-
 /* ==========================================================
-   PROYECTOS PERSONALES Y HOBBIES (LocalStorage)
+   PROYECTOS PERSONALES (Firestore + Cloudinary)
    ========================================================== */
 const projectForm = document.getElementById('project-form');
 if (projectForm) {
-    projectForm.addEventListener('submit', (e) => {
+    projectForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!isAdmin) { alert('No tienes permisos de administrador'); return; }
+
         const title = document.getElementById('proj-title').value;
         const desc = document.getElementById('proj-desc').value;
         const link = document.getElementById('proj-link').value;
-        const imgFile = document.getElementById('proj-img').files[0];
+        const imgInput = document.getElementById('proj-img');
 
-        if (imgFile) {
-            const reader = new FileReader();
-            reader.onload = function(uploadEvent) {
-                const newProject = { title, desc, link, img: uploadEvent.target.result };
-                let projects = JSON.parse(localStorage.getItem('portfolio_projects')) || [];
-                projects.push(newProject);
-                localStorage.setItem('portfolio_projects', JSON.stringify(projects));
-                renderProjectsFromStorage();
-                projectForm.reset();
-                alert('¡Proyecto publicado con éxito!');
-            };
-            reader.readAsDataURL(imgFile);
+        let imgUrl = '';
+        if (imgInput && imgInput.files && imgInput.files[0]) {
+            alert('Subiendo imagen del proyecto...');
+            imgUrl = await subirACloudinary(imgInput.files[0]);
+        }
+
+        try {
+            await db.collection('projects').add({
+                title,
+                desc,
+                link,
+                img: imgUrl,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert('¡Proyecto guardado en Firebase!');
+            projectForm.reset();
+            cargarProyectosFirestore();
+        } catch (error) {
+            console.error("Error al guardar proyecto:", error);
         }
     });
 }
 
-function renderProjectsFromStorage() {
+function cargarProyectosFirestore() {
     const container = document.getElementById('projects-container');
     if (!container) return;
-    const projects = JSON.parse(localStorage.getItem('portfolio_projects')) || [];
-    
-    if (projects.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1;">No hay proyectos publicados aún.</p>';
-        return;
-    }
 
-    container.innerHTML = projects.map((p, index) => `
-        <div class="project-card" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; padding: 1rem; margin-bottom: 1rem;">
-            ${p.img ? `<img src="${p.img}" alt="${p.title}" style="width:100%; height:160px; object-fit:cover; border-radius:6px; margin-bottom: 0.75rem;">` : ''}
-            <h3 style="color: var(--accent); margin-bottom: 0.5rem;">${p.title}</h3>
-            <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">${p.desc}</p>
-            ${p.link ? `<a href="${p.link}" target="_blank" style="color: #38bdf8; text-decoration: underline; font-size: 0.85rem;">Ver Enlace</a>` : ''}
-            ${isAdmin ? `<button onclick="deleteProject(${index})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 10px; display: block;">Eliminar</button>` : ''}
-        </div>
-    `).join('');
+    db.collection('projects').orderBy('createdAt', 'desc').get().then((querySnapshot) => {
+        if (querySnapshot.empty) {
+            container.innerHTML = '<p style="color: #94a3b8; padding: 1rem; grid-column: 1/-1;">No hay proyectos publicados aún.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+            const p = doc.data();
+            const id = doc.id;
+            container.innerHTML += `
+                <div class="project-card" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; padding: 1rem; margin-bottom: 1rem;">
+                    ${p.img ? `<img src="${p.img}" alt="${p.title}" style="width:100%; height:160px; object-fit:cover; border-radius:6px; margin-bottom: 0.75rem;">` : ''}
+                    <h3 style="color: #38bdf8; margin-bottom: 0.5rem;">${p.title}</h3>
+                    <p style="font-size: 0.9rem; margin-bottom: 0.75rem; color: #cbd5e1;">${p.desc}</p>
+                    ${p.link ? `<a href="${p.link}" target="_blank" style="color: #38bdf8; text-decoration: underline; font-size: 0.85rem; display:inline-block; margin-bottom:0.5rem;">Ver Enlace</a>` : ''}
+                    ${isAdmin ? `<button onclick="deleteProject('${id}')" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: block; margin-top: 5px;">Eliminar</button>` : ''}
+                </div>
+            `;
+        });
+    });
 }
 
-function deleteProject(index) {
+function deleteProject(id) {
     if (!isAdmin) return;
-    let projects = JSON.parse(localStorage.getItem('portfolio_projects')) || [];
-    projects.splice(index, 1);
-    localStorage.setItem('portfolio_projects', JSON.stringify(projects));
-    renderProjectsFromStorage();
+    if (confirm('¿Estás seguro de eliminar este proyecto de la nube?')) {
+        db.collection('projects').doc(id).delete().then(() => {
+            alert('Proyecto eliminado');
+            cargarProyectosFirestore();
+        });
+    }
 }
 
-/* Manejo de Hobbies / Carrusel */
+/* ==========================================================
+   HOBBIES Y CARRUSEL (Firestore + Cloudinary)
+   ========================================================== */
 const hobbyForm = document.getElementById('hobby-form');
 if (hobbyForm) {
-    hobbyForm.addEventListener('submit', (e) => {
+    hobbyForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!isAdmin) { alert('No tienes permisos de administrador'); return; }
+
         const category = document.getElementById('hobby-category').value;
         const title = document.getElementById('hobby-title').value;
         const desc = document.getElementById('hobby-desc').value;
-        const mediaFile = document.getElementById('hobby-media').files[0];
+        const mediaInput = document.getElementById('hobby-media');
 
-        if (mediaFile) {
-            const reader = new FileReader();
-            reader.onload = function(uploadEvent) {
-                const newHobby = { category, title, desc, media: uploadEvent.target.result, type: mediaFile.type.startsWith('video') ? 'video' : 'image' };
-                let hobbies = JSON.parse(localStorage.getItem('portfolio_hobbies')) || [];
-                hobbies.push(newHobby);
-                localStorage.setItem('portfolio_hobbies', JSON.stringify(hobbies));
-                renderHobbiesFromStorage();
-                hobbyForm.reset();
-                alert('¡Hobby agregado al carrusel!');
-            };
-            reader.readAsDataURL(mediaFile);
+        let mediaUrl = '';
+        let type = 'image';
+
+        if (mediaInput && mediaInput.files && mediaInput.files[0]) {
+            const file = mediaInput.files[0];
+            type = file.type.startsWith('video') ? 'video' : 'image';
+            alert('Subiendo multimedia a Cloudinary...');
+            mediaUrl = await subirACloudinary(file);
+        }
+
+        try {
+            await db.collection('hobbies').add({
+                category,
+                title,
+                desc,
+                media: mediaUrl,
+                type,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert('¡Elemento guardado en Firebase!');
+            hobbyForm.reset();
+            cargarHobbiesFirestore();
+        } catch (error) {
+            console.error("Error al guardar hobby:", error);
         }
     });
 }
 
-function renderHobbiesFromStorage() {
+function cargarHobbiesFirestore() {
     const container = document.getElementById('carousel-container');
     if (!container) return;
-    const hobbies = JSON.parse(localStorage.getItem('portfolio_hobbies')) || [];
 
-    if (hobbies.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted); padding: 1rem;">No hay elementos en el carrusel.</p>';
-        return;
-    }
+    db.collection('hobbies').orderBy('createdAt', 'desc').get().then((querySnapshot) => {
+        if (querySnapshot.empty) {
+            container.innerHTML = '<p style="color: #94a3b8; padding: 1rem;">No hay elementos en el carrusel.</p>';
+            return;
+        }
 
-    container.innerHTML = hobbies.map((h, index) => `
-        <div class="carousel-item" style="min-width: 280px; background: rgba(30, 41, 59, 0.8); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05); position: relative;">
-            <span style="font-size: 0.75rem; background: var(--accent); color: #0f172a; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${h.category}</span>
-            <h3 style="margin: 0.5rem 0; color: #fff;">${h.title}</h3>
-            ${h.type === 'video' ? 
-                `<video src="${h.media}" controls style="width:100%; height:140px; object-fit:cover; border-radius:6px;"></video>` : 
-                `<img src="${h.media}" alt="${h.title}" style="width:100%; height:140px; object-fit:cover; border-radius:6px;">`
-            }
-            <p style="font-size: 0.85rem; margin-top: 0.5rem;">${h.desc}</p>
-            ${isAdmin ? `<button onclick="deleteHobby(${index})" style="background: #ef4444; color: white; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 0.8rem;">Eliminar</button>` : ''}
-        </div>
-    `).join('');
+        container.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+            const h = doc.data();
+            const id = doc.id;
+            container.innerHTML += `
+                <div class="carousel-item" style="min-width: 280px; background: rgba(30, 41, 59, 0.8); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05); position: relative; margin-bottom: 1rem;">
+                    <span style="font-size: 0.75rem; background: #38bdf8; color: #0f172a; padding: 2px 6px; border-radius: 4px; font-weight: bold; display:inline-block; margin-bottom:5px;">${h.category}</span>
+                    <h3 style="margin: 0.5rem 0; color: #fff;">${h.title}</h3>
+                    ${h.media ? (h.type === 'video' ? 
+                        `<video src="${h.media}" controls style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px;"></video>` : 
+                        `<img src="${h.media}" alt="${h.title}" style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px;">`
+                    ) : ''}
+                    <p style="font-size: 0.85rem; margin-top: 0.5rem; color: #cbd5e1;">${h.desc}</p>
+                    ${isAdmin ? `<button onclick="deleteHobby('${id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 0.8rem;">Eliminar</button>` : ''}
+                </div>
+            `;
+        });
+    });
 }
 
-function deleteHobby(index) {
+function deleteHobby(id) {
     if (!isAdmin) return;
-    let hobbies = JSON.parse(localStorage.getItem('portfolio_hobbies')) || [];
-    hobbies.splice(index, 1);
-    localStorage.setItem('portfolio_hobbies', JSON.stringify(hobbies));
-    renderHobbiesFromStorage();
+    if (confirm('¿Estás seguro de eliminar este elemento?')) {
+        db.collection('hobbies').doc(id).delete().then(() => {
+            alert('Elemento eliminado');
+            cargarHobbiesFirestore();
+        });
+    }
+}
+
+/* ==========================================================
+   CARGA DE CONFIGURACIÓN GLOBAL (Avatar y otros datos)
+   ========================================================== */
+function cargarDatosRemotos() {
+    db.collection('portfolio').doc('config').get().then((doc) => {
+        if (doc.exists) {
+            const data = doc.data();
+            if (data.avatar) {
+                aplicarImagenAvatar(data.avatar);
+            }
+        }
+    }).catch((error) => {
+        console.error("Error al cargar configuración:", error);
+    });
 }
