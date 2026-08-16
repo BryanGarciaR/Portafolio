@@ -1,82 +1,190 @@
-/* ==========================================================
-   EDICIÓN EN LÍNEA (CORREGIDO)
-   ========================================================== */
-function toggleEdit(sectionKey) {
-    if (!isAdmin) { verificarAdmin(); return; }
-    const editBox = document.getElementById(`edit-box-${sectionKey}`);
-    if (!editBox) return;
-
-    const isActive = editBox.classList.contains('active');
-
-    if (!isActive) {
-        if (sectionKey === 'profile') {
-            const disp = document.getElementById('disp-profile');
-            const input = document.getElementById('input-profile');
-            if (disp && input) input.value = disp.innerText.trim();
-        } else if (sectionKey === 'skills') {
-            const disp = document.getElementById('disp-skills-container');
-            const input = document.getElementById('input-skills');
-            if (disp && input) input.value = disp.innerHTML.trim();
-        } else if (sectionKey === 'events') {
-            const disp = document.getElementById('disp-events-intro');
-            const input = document.getElementById('input-events');
-            if (disp && input) input.value = disp.innerText.trim();
-        } else if (sectionKey === 'certs') {
-            const disp = document.getElementById('disp-certs');
-            const input = document.getElementById('input-certs');
-            if (disp && input) input.value = disp.innerText.trim();
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafolio - Bryan Alonso Garcia Romero</title>
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
         }
-    }
-    editBox.classList.toggle('active');
-}
 
-function saveEdit(sectionKey) {
-    if (!isAdmin) { alert('Acción no permitida'); return; }
-    let savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
 
-    if (sectionKey === 'profile') {
-        const val = document.getElementById('input-profile').value;
-        const disp = document.getElementById('disp-profile');
-        if (disp) disp.innerText = val;
-        savedData['profile'] = val;
-    } else if (sectionKey === 'skills') {
-        const val = document.getElementById('input-skills').value;
-        const disp = document.getElementById('disp-skills-container');
-        if (disp) disp.innerHTML = val; // Guardamos el HTML completo
-        savedData['skills'] = val;
-    } else if (sectionKey === 'events') {
-        const val = document.getElementById('input-events').value;
-        const disp = document.getElementById('disp-events-intro');
-        if (disp) disp.innerText = val;
-        savedData['events'] = val;
-    } else if (sectionKey === 'certs') {
-        const val = document.getElementById('input-certs').value;
-        const disp = document.getElementById('disp-certs');
-        if (disp) disp.innerHTML = val;
-        savedData['certs'] = val;
-    }
-    localStorage.setItem('portfolio_edits', JSON.stringify(savedData));
-    toggleEdit(sectionKey);
-}
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+        }
 
-function cargarDatosLocales() {
-    const savedData = JSON.parse(localStorage.getItem('portfolio_edits')) || {};
-    
-    if (savedData['profile']) {
-        const disp = document.getElementById('disp-profile');
-        if (disp) disp.innerText = savedData['profile'];
-    }
-    if (savedData['skills']) {
-        const disp = document.getElementById('disp-skills-container');
-        if (disp) disp.innerHTML = savedData['skills'];
-    }
-    if (savedData['events']) {
-        const disp = document.getElementById('disp-events-intro');
-        if (disp) disp.innerText = savedData['events'];
-    }
-    if (savedData['certs']) {
-        const disp = document.getElementById('disp-certs');
-        if (disp) disp.innerHTML = savedData['certs'];
-    }
-    // ... resto de tu código de avatar y otros elementos
-}
+        nav button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 1.5rem;
+            padding: 0.5rem 1rem;
+            transition: color 0.3s;
+        }
+
+        nav button.active, nav button:hover {
+            color: var(--accent);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .view-section {
+            display: none;
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .admin-controls {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #475569;
+        }
+
+        .admin-only {
+            display: none; /* Controlado por JS */
+        }
+
+        .edit-box {
+            display: none;
+            margin-top: 1rem;
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .edit-box.active {
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 0.5rem;
+            resize: vertical;
+        }
+
+        button.btn-action {
+            background: var(--accent);
+            color: #0f172a;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        button.btn-action:hover {
+            background: var(--accent-hover);
+        }
+
+        .admin-lock-btn {
+            background: transparent;
+            border: 1px solid #475569;
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Mi Portafolio</h1>
+        <div>
+            <nav style="display:inline-block;">
+                <button class="nav-btn active" onclick="switchView('view-home', this)">Inicio</button>
+                <button class="nav-btn" onclick="switchView('view-projects', this)">Proyectos</button>
+            </nav>
+            <button class="admin-lock-btn" onclick="verificarAdmin()" title="Modo Administrador">
+                <i id="admin-lock-icon" class="fa-solid fa-lock"></i>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- SECCIÓN INICIO -->
+        <section id="view-home" class="view-section active">
+            <h2>Perfil Profesional</h2>
+            <p id="disp-profile">Estudiante y profesional enfocado en el desarrollo y la gestión tecnológica.</p>
+            
+            <div class="admin-controls admin-only">
+                <button class="btn-action" onclick="toggleEdit('profile')">Editar Perfil</button>
+                <div id="edit-box-profile" class="edit-box">
+                    <textarea id="input-profile"></textarea>
+                    <button class="btn-action" onclick="saveEdit('profile')">Guardar</button>
+                </div>
+            </div>
+
+            <hr style="border:0; border-top:1px solid #334155; margin: 2rem 0;">
+
+            <h2>Habilidades y Competencias</h2>
+            <div id="disp-skills-container">
+                <ul>
+                    <li>Gestión de Proyectos y Soporte TI</li>
+                    <li>Desarrollo Web Frontend</li>
+                    <li>Optimización de sistemas</li>
+                </ul>
+            </div>
+
+            <div class="admin-controls admin-only">
+                <button class="btn-action" onclick="toggleEdit('skills')">Editar Habilidades (HTML)</button>
+                <div id="edit-box-skills" class="edit-box">
+                    <textarea id="input-skills"></textarea>
+                    <button class="btn-action" onclick="saveEdit('skills')">Guardar</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN PROYECTOS -->
+        <section id="view-projects" class="view-section">
+            <h2>Proyectos</h2>
+            <div id="projects-container">
+                <p>Cargando proyectos...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Vinculación del script que solucionará la carga de datos y IDs -->
+    <script src="script.js"></script>
+</body>
+</html>
