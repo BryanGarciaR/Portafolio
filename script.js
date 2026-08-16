@@ -22,13 +22,11 @@ const CLOUDINARY_PRESET = "portafolio_preset";
 
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
 
-
 document.addEventListener('DOMContentLoaded', () => {
     aplicarModoAdminVisual();
     cargarDatosRemotos();
     cargarProyectosFirestore();
     cargarHobbiesFirestore();
-    
 });
 
 /* ==========================================================
@@ -54,65 +52,24 @@ function verificarAdmin() {
 }
 
 function aplicarModoAdminVisual() {
-    // 1. Cambiar icono del botón flotante
-    const lockIcon = document.getElementById('admin-lock-icon');
-    if (lockIcon) {
-        lockIcon.className = isAdmin ? "fa-solid fa-unlock" : "fa-solid fa-lock";
-    }
-
-    // 2. SOLO OCULTAR/MOSTRAR LA CÁMARA (El avatar principal se queda visible)
-    const avatarOverlay = document.querySelector('.avatar-overlay');
-    if (avatarOverlay) {
-        avatarOverlay.style.display = isAdmin ? 'flex' : 'none';
-    }
-
-    // 3. Control de botones de modificar en las secciones
     const editBtns = document.querySelectorAll('.edit-btn');
     editBtns.forEach(btn => {
         btn.style.display = isAdmin ? 'inline-block' : 'none';
     });
-
-    // 4. Control de formularios de subida
-    const projectForm = document.getElementById('project-form');
-    if (projectForm) {
-        projectForm.parentElement.style.display = isAdmin ? 'block' : 'none';
-    }
-
-    const hobbyForm = document.getElementById('hobby-form');
-    if (hobbyForm) {
-        hobbyForm.parentElement.style.display = isAdmin ? 'block' : 'none';
-    }
 }
 
 /* ==========================================================
    NAVEGACIÓN ENTRE VISTAS
    ========================================================== */
-function switchView(viewId, buttonElement) {
-    // 1. Ocultar todas las vistas forzando el estilo si es necesario
-    const sections = document.querySelectorAll('.view-section');
-    sections.forEach(section => {
-        section.classList.remove('active');
-        section.style.display = 'none'; // Forzamos ocultado
-    });
+function switchView(viewId, btn) {
+    document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-    // 2. Quitar la clase active de todos los botones
-    const navButtons = document.querySelectorAll('.nav-btn');
-    navButtons.forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // 3. Mostrar la sección seleccionada
-    const targetSection = document.getElementById(viewId);
-    if (targetSection) {
-        targetSection.classList.add('active');
-        targetSection.style.display = 'flex'; // Forzamos que se muestre como flex
-    }
-
-    // 4. Activar el botón presionado
-    if (buttonElement) {
-        buttonElement.classList.add('active');
-    }
+    const targetView = document.getElementById(viewId);
+    if (targetView) targetView.classList.add('active');
+    if (btn) btn.classList.add('active');
 }
+
 /* ==========================================================
    SUBIR ARCHIVOS A CLOUDINARY
    ========================================================== */
