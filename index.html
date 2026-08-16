@@ -9,6 +9,11 @@
 </head>
 <body>
 
+<!-- Botón de Modo Administrador exacto en la esquina inferior derecha -->
+<button id="admin-trigger-btn" onclick="verificarAdmin()" title="Modo Administrador" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #0f172a; color: var(--accent, #38bdf8); border: 2px solid var(--accent, #38bdf8); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+    <i class="fa-solid fa-lock" id="admin-lock-icon"></i>
+</button>
+
 <div class="tech-bg">
     <div class="glow-orb"></div>
     <div class="glow-orb orb2"></div>
@@ -47,15 +52,20 @@
         <!-- SECCIÓN: PORTAFOLIO PRINCIPAL -->
         <div id="tab-portfolio" class="tab-content active">
             <section class="card" id="section-profile">
-                <h2>Perfil Profesional</h2>
-                <p class="p-text">
+                <h2>Perfil Profesional <button class="edit-btn" onclick="toggleEdit('profile')">✏️ Modificar</button></h2>
+                <p id="disp-profile" class="p-text">
                     Profesional especializado en tecnologías de la información, infraestructura de redes y desarrollo de software. Con una sólida trayectoria en gestión de servicios estudiantiles, enfoco mi carrera actual en la resolución avanzada de problemas técnicos, scripts de depuración de conexiones cliente-servidor y la optimización de plataformas tecnológicas.
                 </p>
+                <div id="edit-box-profile" class="inline-edit-box">
+                    <div class="form-group"><textarea id="input-profile" style="height: 100px;"></textarea></div>
+                    <button class="submit-btn" onclick="saveEdit('profile')">Guardar Cambios</button>
+                    <button class="cancel-btn" onclick="toggleEdit('profile')">Cancelar</button>
+                </div>
             </section>
 
             <section class="card" id="section-skills">
-                <h2>Habilidades Técnicas</h2>
-                <div class="skills-grid">
+                <h2>Habilidades Técnicas <button class="edit-btn" onclick="toggleEdit('skills')">✏️ Modificar</button></h2>
+                <div class="skills-grid" id="disp-skills">
                     <div class="skill-box">
                         <h3>Infraestructura & Redes</h3>
                         <ul>
@@ -72,6 +82,11 @@
                             <li>Automatización</li>
                         </ul>
                     </div>
+                </div>
+                <div id="edit-box-skills" class="inline-edit-box">
+                    <div class="form-group"><textarea id="input-skills" style="height: 120px;"></textarea></div>
+                    <button class="submit-btn" onclick="saveEdit('skills')">Guardar Cambios</button>
+                    <button class="cancel-btn" onclick="toggleEdit('skills')">Cancelar</button>
                 </div>
             </section>
         </div>
