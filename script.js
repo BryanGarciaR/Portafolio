@@ -55,7 +55,7 @@ function syncAdminState(enabled) {
         btn.style.display = enabled ? 'inline-block' : 'none';
     });
 
-    // 2. NUEVO: Ocultar/Mostrar el icono de la cámara en el avatar
+    // 2. Ocultar/Mostrar el icono de la cámara en el avatar
     const avatarOverlay = document.querySelector('.avatar-overlay');
     const avatarContainer = document.querySelector('.avatar-container');
     
@@ -131,7 +131,6 @@ async function subirACloudinary(file) {
             return data.secure_url;
         } else {
             console.error("Detalle del error de Cloudinary:", data);
-            // Mostrar el error real (ej. si el video pesa más de lo que permite tu plan gratuito)
             alert(`Error de Cloudinary: ${data.error?.message || 'Archivo no aceptado'}`);
             return null;
         }
@@ -163,12 +162,11 @@ if (hobbyForm) {
             const file = mediaInput.files[0];
             type = file.type.startsWith('video') ? 'video' : 'image';
             
-            // Los videos pesados toman unos segundos extra
             alert('Subiendo archivo a la nube... Por favor, no cierres esta ventana. Los videos pueden tardar unos segundos.');
             
             mediaUrl = await subirACloudinary(file);
 
-            // NUEVO: Si Cloudinary falló (mediaUrl es null), detenemos TODO.
+            // Si Cloudinary falló, detenemos TODO.
             if (!mediaUrl) {
                 alert('❌ Operación cancelada: No se pudo subir el archivo multimedia.');
                 return; // Corta la ejecución, NO guarda los textos en Firebase.
@@ -192,6 +190,55 @@ if (hobbyForm) {
             alert('Hubo un error al registrar los datos en Firebase.');
         }
     });
+}
+
+function cargarHobbiesFirestore() {
+    const container = document.getElementById('carousel-container');
+    if (!container) return;
+
+    db.collection('hobbies').orderBy('createdAt', 'desc').get().then((querySnapshot) => {
+        if (querySnapshot.empty) {
+            container.innerHTML = '<p style="color: #94a3b8; padding: 1rem;">No hay elementos en el carrusel.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+            const h = doc.data();
+            const id = doc.id;
+            
+            // 1. Evitar el feo "undefined" si falta la categoría
+            const categoryText = h.category ? h.category : 'Hobby';
+            
+            // 2. Comprobación inteligente de video
+            const isVideo = h.type === 'video' || (h.media && h.media.match(/\.(mp4|webm|ogg|mov)$/i));
+
+            container.innerHTML += `
+                <div class="carousel-item">
+                    <span style="font-size: 0.75rem; background: var(--accent); color: #0f172a; padding: 2px 6px; border-radius: 4px; font-weight: bold; display:inline-block; margin-bottom:5px;">${categoryText}</span>
+                    <h3 style="margin: 0.5rem 0; color: #fff; font-size: 1rem;">${h.title}</h3>
+                    
+                    ${h.media ? (isVideo ? 
+                        `<video src="${h.media}" controls style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px; background:#000;"></video>` : 
+                        `<img src="${h.media}" alt="${h.title}" style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px;">`
+                    ) : ''}
+                    
+                    <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">${h.desc}</p>
+                    ${isAdmin ? `<button onclick="deleteHobby('${id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 0.8rem; width:100%;">Eliminar</button>` : ''}
+                </div>
+            `;
+        });
+    });
+}
+
+function deleteHobby(id) {
+    if (!isAdmin) return;
+    if (confirm('¿Estás seguro de eliminar este elemento?')) {
+        db.collection('hobbies').doc(id).delete().then(() => {
+            alert('Elemento eliminado');
+            cargarHobbiesFirestore();
+        });
+    }
 }
 
 /* ==========================================================
@@ -503,97 +550,6 @@ function deleteProject(id) {
         db.collection('projects').doc(id).delete().then(() => {
             alert('Proyecto eliminado');
             cargarProyectosFirestore();
-        });
-    }
-}
-
-/* ==========================================================
-   HOBBIES Y CARRUSEL
-   ========================================================== */
-const hobbyForm = document.getElementById('hobby-form');
-if (hobbyForm) {
-    hobbyForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); 
-        if (!isAdmin) { alert('No tienes permisos de administrador'); return; }
-
-        const category = document.getElementById('hobby-category').value;
-        const title = document.getElementById('hobby-title').value;
-        const desc = document.getElementById('hobby-desc').value;
-        const mediaInput = document.getElementById('hobby-media');
-
-        let mediaUrl = '';
-        let type = 'image';
-
-        if (mediaInput && mediaInput.files && mediaInput.files[0]) {
-            const file = mediaInput.files[0];
-            type = file.type.startsWith('video') ? 'video' : 'image';
-            alert('Subiendo multimedia a Cloudinary...');
-            mediaUrl = await subirACloudinary(file);
-        }
-
-        try {
-            await db.collection('hobbies').add({
-                category,
-                title,
-                desc,
-                media: mediaUrl,
-                type,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert('¡Elemento guardado con éxito en Firebase!');
-            hobbyForm.reset();
-            cargarHobbiesFirestore();
-        } catch (error) {
-            console.error("Error al guardar hobby:", error);
-            alert('Hubo un error al registrar el hobby.');
-        }
-    });
-}
-
-function cargarHobbiesFirestore() {
-    const container = document.getElementById('carousel-container');
-    if (!container) return;
-
-    db.collection('hobbies').orderBy('createdAt', 'desc').get().then((querySnapshot) => {
-        if (querySnapshot.empty) {
-            container.innerHTML = '<p style="color: #94a3b8; padding: 1rem;">No hay elementos en el carrusel.</p>';
-            return;
-        }
-
-        container.innerHTML = '';
-        querySnapshot.forEach((doc) => {
-            const h = doc.data();
-            const id = doc.id;
-            
-            // 1. Evitar el feo "undefined" si falta la categoría
-            const categoryText = h.category ? h.category : 'Hobby';
-            
-            // 2. Comprobación inteligente de video (por tipo guardado o si el link es .mp4/.webm)
-            const isVideo = h.type === 'video' || (h.media && h.media.match(/\.(mp4|webm|ogg|mov)$/i));
-
-            container.innerHTML += `
-                <div class="carousel-item">
-                    <span style="font-size: 0.75rem; background: var(--accent); color: #0f172a; padding: 2px 6px; border-radius: 4px; font-weight: bold; display:inline-block; margin-bottom:5px;">${categoryText}</span>
-                    <h3 style="margin: 0.5rem 0; color: #fff; font-size: 1rem;">${h.title}</h3>
-                    
-                    ${h.media ? (isVideo ? 
-                        `<video src="${h.media}" controls style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px; background:#000;"></video>` : 
-                        `<img src="${h.media}" alt="${h.title}" style="width:100%; height:140px; object-fit:cover; border-radius:6px; margin-bottom:8px;">`
-                    ) : ''}
-                    
-                    <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">${h.desc}</p>
-                    ${isAdmin ? `<button onclick="deleteHobby('${id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 0.8rem; width:100%;">Eliminar</button>` : ''}
-                </div>
-            `;
-        });
-    });
-}
-function deleteHobby(id) {
-    if (!isAdmin) return;
-    if (confirm('¿Estás seguro de eliminar este elemento?')) {
-        db.collection('hobbies').doc(id).delete().then(() => {
-            alert('Elemento eliminado');
-            cargarHobbiesFirestore();
         });
     }
 }
