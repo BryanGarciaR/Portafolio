@@ -4,7 +4,7 @@
 const firebaseConfig = {
     apiKey: "AIzaSyDx_gaDRKRWcXbykR0w9K6T-XdvQ6mumIk",
     authDomain: "bryangr-dev.firebaseapp.com",
-    projectId: "BryanGR-dev", // Tu proyecto actual en Firebase
+    projectId: "BryanGR-dev",
     storageBucket: "bryangr-dev.firebasestorage.app",
     messagingSenderId: "505846189271",
     appId: "505846189271:web:dafffb1c5d6a3b33a7b492"
@@ -16,8 +16,8 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// Configuración de Cloudinary (Reemplaza TU_CLOUD_NAME y tu Upload Preset configurado)
-const CLOUDINARY_URL=cloudinary://<your_api_key>:<your_api_secret>@n4ni5wxl
+// CONFIGURACIÓN CORRECTA DE CLOUDINARY PARA EL NAVEGADOR
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/n4ni5wxl/upload";
 const CLOUDINARY_PRESET = "portafolio_preset";
 
 let isAdmin = sessionStorage.getItem('portfolio_admin') === 'true';
@@ -87,6 +87,7 @@ async function subirACloudinary(file) {
         if (data.secure_url) {
             return data.secure_url;
         } else {
+            console.error("Detalle Cloudinary:", data);
             throw new Error('Error al subir la imagen a Cloudinary');
         }
     } catch (error) {
@@ -126,12 +127,25 @@ function aplicarImagenAvatar(src) {
 /* ==========================================================
    EDICIÓN RÁPIDA DE SECCIONES (Modo Admin)
    ========================================================== */
-function toggleEdit(sectionKey) {
+async function toggleEdit(sectionKey) {
     if (!isAdmin) {
         verificarAdmin();
         return;
     }
-    alert(`Modo edición activado para la sección: ${sectionKey}.`);
+    
+    const nuevoTexto = prompt(`Modificar contenido para [${sectionKey.toUpperCase()}]:\nIngresa el nuevo texto:`);
+    if (nuevoTexto !== null && nuevoTexto.trim() !== "") {
+        try {
+            await db.collection('portfolio').doc('config').set({
+                [sectionKey]: nuevoTexto
+            }, { merge: true });
+            alert('¡Modificación guardada en Firebase!');
+            cargarDatosRemotos();
+        } catch (error) {
+            console.error("Error al actualizar sección:", error);
+            alert("Hubo un error al guardar en Firebase.");
+        }
+    }
 }
 
 /* ==========================================================
@@ -165,6 +179,9 @@ if (projectForm) {
             alert('¡Proyecto guardado con éxito en Firebase!');
             projectForm.reset();
             cargarProyectosFirestore();
+            
+            // Opcional: si quieres que al terminar te devuelva al portafolio principal
+            // switchView('view-portafolio', document.querySelector('.nav-btn'));
         } catch (error) {
             console.error("Error al guardar proyecto:", error);
             alert('Hubo un error al registrar el proyecto.');
@@ -293,7 +310,7 @@ function deleteHobby(id) {
 }
 
 /* ==========================================================
-   CARGA DE CONFIGURACIÓN GLOBAL (Avatar remoto)
+   CARGA DE CONFIGURACIÓN GLOBAL (Avatar y textos)
    ========================================================== */
 function cargarDatosRemotos() {
     db.collection('portfolio').doc('config').get().then((doc) => {
@@ -302,6 +319,11 @@ function cargarDatosRemotos() {
             if (data.avatar) {
                 aplicarImagenAvatar(data.avatar);
             }
+            // Rellena textos si guardaste secciones personalizadas
+            Object.keys(data).forEach(key => {
+                const el = document.getElementById(`texto-${key}`);
+                if (el) el.innerText = data[key];
+            });
         }
     }).catch((error) => {
         console.error("Error al cargar configuración:", error);
