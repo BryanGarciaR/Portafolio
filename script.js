@@ -236,27 +236,47 @@ function cargarDatosRemotos() {
 
             // Competencias Técnicas (Skills)
             if (data.skills) {
-                // Si 'skills' es un objeto con las tarjetas
                 if (typeof data.skills === 'object') {
-                    if (data.skills.dev && document.getElementById('disp-skills-dev')) {
-                        document.getElementById('disp-skills-dev').innerHTML = data.skills.dev;
-                        document.getElementById('input-skills-dev').value = data.skills.dev;
+                    // Cargar en los textareas del formulario de edición
+                    if (document.getElementById('input-skills-dev')) {
+                        document.getElementById('input-skills-dev').value = data.skills.dev || '';
                     }
-                    if (data.skills.infra && document.getElementById('disp-skills-infra')) {
-                        document.getElementById('disp-skills-infra').innerHTML = data.skills.infra;
-                        document.getElementById('input-skills-infra').value = data.skills.infra;
+                    if (document.getElementById('input-skills-infra')) {
+                        document.getElementById('input-skills-infra').value = data.skills.infra || '';
                     }
-                    if (data.skills.mgmt && document.getElementById('disp-skills-mgmt')) {
-                        document.getElementById('disp-skills-mgmt').innerHTML = data.skills.mgmt;
-                        document.getElementById('input-skills-mgmt').value = data.skills.mgmt;
+                    if (document.getElementById('input-skills-mgmt')) {
+                        document.getElementById('input-skills-mgmt').value = data.skills.mgmt || '';
+                    }
+
+                    // Actualizar las tarjetas visuales si el contenedor existe
+                    const container = document.getElementById('disp-skills-container');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="skill-box">
+                                <h3>Desarrollo y Debugging</h3>
+                                <ul>${data.skills.dev || ''}</ul>
+                            </div>
+                            <div class="skill-box">
+                                <h3>Infraestructura & Redes</h3>
+                                <ul>${data.skills.infra || ''}</ul>
+                            </div>
+                            <div class="skill-box">
+                                <h3>Gestión y E-sports Tech</h3>
+                                <ul>${data.skills.mgmt || ''}</ul>
+                            </div>
+                        `;
                     }
                 } 
-                // Si lo guardaste como un string simple en un solo textarea
                 else if (typeof data.skills === 'string') {
                     const inputSkills = document.getElementById('input-skills');
                     if (inputSkills) inputSkills.value = data.skills;
                 }
             }
+        }
+    }).catch((error) => {
+        console.error("Error al cargar los datos remotos: ", error);
+    });
+}
 
             // Eventos / Intro
             if (data.events) {
